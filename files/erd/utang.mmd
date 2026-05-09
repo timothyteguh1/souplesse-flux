@@ -1,0 +1,55 @@
+---
+title: UTANG
+---
+erDiagram
+    pembayaran_utangs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        varchar vendor_type FK
+        char vendor_id
+        char kas_id FK "kas (nullable)"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pembayaran_utang_details {
+        char id PK
+        char pembayaran_utang_id FK "pembayaran_utangs"
+        char mutasi_transaksi_id FK "mutasi_transaksis"
+        decimal nominal
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pembayaran_utang_piutangs {
+        char id PK
+        char pembayaran_utang_id FK "pembayaran_utangs"
+        char mutasi_transaksi_id FK "mutasi_transaksis"
+        decimal nominal
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    memo_kredits {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        varchar vendor_type FK
+        char vendor_id
+        char kas_id FK "kas"
+        decimal nominal
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    pembayaran_utangs one to many pembayaran_utang_details: ""

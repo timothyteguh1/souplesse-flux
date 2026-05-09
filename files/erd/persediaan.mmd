@@ -1,0 +1,132 @@
+---
+title: PERSEDIAAN
+---
+erDiagram
+    penambahan_persediaans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char gudang_id FK "gudangs"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    penambahan_persediaan_details {
+        char id PK
+        char penambahan_persediaan_id FK "penambahan_persediaans"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah
+        decimal harga
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pengurangan_persediaans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char gudang_id FK "gudangs"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pengurangan_persediaan_details {
+        char id PK
+        char pengurangan_persediaan_id FK "pengurangan_persediaans"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah
+        decimal harga
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transfer_persediaans {
+        char id PK
+        char cabang_id FK "cabangs"
+        char cabang_tujuan_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char gudang_asal_id FK "gudangs"
+        char gudang_tujuan_id FK "gudangs"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transfer_persediaan_details {
+        char id PK
+        char transfer_persediaan_id FK "transfer_persediaans"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    stok_opnames {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char gudang_id FK "gudangs"
+        datetime tanggal_konfirmasi "(nullable)"
+        datetime tanggal_selesai "(nullable)"
+        char user_konfirmasi_id FK "users (nullable)"
+        char user_selesai_id FK "users (nullable)"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    stok_opname_details {
+        char id PK
+        char stok_opname_id FK "stok_opnames"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah_fisik
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    stok_opname_hasils {
+        char id PK
+        char stok_opname_id FK "stok_opnames"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah_sistem
+        decimal jumlah_fisik
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    penambahan_persediaans one to many penambahan_persediaan_details: ""
+    pengurangan_persediaans one to many pengurangan_persediaan_details: ""
+    transfer_persediaans one to many transfer_persediaan_details: ""
+    stok_opnames one to many stok_opname_details: ""
+    stok_opnames one to many stok_opname_hasils: ""

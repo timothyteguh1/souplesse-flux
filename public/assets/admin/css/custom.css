@@ -1,0 +1,49 @@
+/*:root[data-bs-theme=light] {*/
+/*    --vz-primary: #0066ba;*/
+/*    --vz-primary-rgb: 55, 113, 122;*/
+/*    --vz-primary-text-emphasis: #03589e;*/
+/*    --vz-secondary: #164e5a;*/
+/*    --vz-secondary-rgb: 22, 78, 90;*/
+/*    --vz-secondary-text-emphasis: #114049;*/
+/*    --vz-body-bg: #f3f3f9;*/
+/*    --vz-info: #35c848;*/
+/*    --vz-info-text-emphasis: #16a524;*/
+/*}*/
+
+/*:root[data-bs-theme=dark] {*/
+/*    --vz-body-bg: #1a1d21;*/
+/*}*/
+
+/*:root[data-bs-theme=dark][data-sidebar=dark] {*/
+/*    --vz-vertical-menu-bg: #212529;*/
+/*    --vz-vertical-menu-border: #212529;*/
+
+/*    --vz-vertical-menu-title-color: #5f6270;*/
+/*    --vz-vertical-menu-item-color: #5f6270;*/
+/*    --vz-vertical-menu-sub-item-color: #5f6270;*/
+
+/*    --vz-vertical-menu-item-active-color: #fff;*/
+/*    --vz-vertical-menu-item-hover-color: #fff;*/
+/*}*/
+
+/*:root[data-sidebar=dark] {*/
+/*    --vz-vertical-menu-bg: #0066ba;*/
+/*    --vz-vertical-menu-border: #0066ba;*/
+
+/*    --vz-vertical-menu-title-color: #fdfdfd;*/
+/*    --vz-vertical-menu-item-color: #dddddd;*/
+/*    --vz-vertical-menu-sub-item-color: #dddddd;*/
+
+/*    --vz-vertical-menu-item-active-color: #fdfdfd;*/
+/*    --vz-vertical-menu-item-hover-color: #fdfdfd;*/
+/*    --vz-vertical-menu-sub-item-hover-color: #fdfdfd;*/
+/*}*/
+
+.navbar-menu {
+    padding-bottom: 1rem !important;
+}
+
+.card-header-tabs {
+    margin-left: 0;
+    margin-right: 0;
+}

@@ -1,0 +1,380 @@
+---
+title: SYSTEM
+---
+erDiagram
+    activity_log {
+        bigint id PK
+        varchar log_name FK
+        text description
+        varchar subject_type FK
+        varchar event
+        char subject_id
+        varchar causer_type FK
+        char causer_id
+        json properties
+        char batch_uuid
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    cache {
+        varchar key PK
+        mediumtext value
+        int expiration
+    }
+
+    cache_locks {
+        varchar key PK
+        varchar owner
+        int expiration
+    }
+
+    code_counters {
+        char id PK
+        varchar model
+        varchar prefix
+        int length
+        bigint counter
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    deleted_models {
+        bigint id PK
+        varchar key
+        varchar model FK "."
+        json values
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    failed_jobs {
+        bigint id PK
+        varchar uuid UK
+        text connection
+        text queue
+        longtext payload
+        longtext exception
+        timestamp failed_at
+    }
+
+    job_batches {
+        varchar id PK
+        varchar name
+        int total_jobs
+        int pending_jobs
+        int failed_jobs
+        longtext failed_job_ids
+        mediumtext options
+        int cancelled_at
+        int created_at
+        int finished_at
+    }
+
+    jobs {
+        bigint id PK
+        varchar queue FK
+        longtext payload
+        tinyint attempts
+        int reserved_at
+        int available_at
+        int created_at
+    }
+
+    media {
+        bigint id PK
+        varchar model_type FK
+        char model_id
+        char uuid UK
+        varchar collection_name
+        varchar name
+        varchar file_name
+        varchar mime_type
+        varchar disk
+        varchar conversions_disk
+        bigint size
+        json manipulations
+        json custom_properties
+        json generated_conversions
+        json responsive_images
+        int order_column FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    migrations {
+        int id PK
+        varchar migration
+        int batch
+    }
+
+    model_has_permissions {
+        char permission_id PK
+        varchar model_type PK
+        char model_id PK
+    }
+
+    model_has_roles {
+        char role_id PK
+        varchar model_type PK
+        char model_id PK
+    }
+
+    password_reset_tokens {
+        varchar email PK
+        varchar token
+        timestamp created_at
+    }
+
+    permissions {
+        char id PK
+        varchar name FK "."
+        varchar guard_name
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    personal_access_tokens {
+        bigint id PK
+        varchar tokenable_type FK
+        char tokenable_id
+        varchar name
+        varchar token UK
+        text abilities
+        timestamp last_used_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pulse_aggregates {
+        bigint id PK
+        int bucket FK "."
+        mediumint period FK "."
+        varchar type FK "."
+        mediumtext key
+        binary key_hash
+        varchar aggregate
+        decimal value
+        int count
+    }
+
+    pulse_entries {
+        bigint id PK
+        int timestamp FK
+        varchar type FK
+        mediumtext key
+        binary key_hash FK
+        bigint value
+    }
+
+    pulse_values {
+        bigint id PK
+        int timestamp FK
+        varchar type FK "."
+        mediumtext key
+        binary key_hash
+        mediumtext value
+    }
+
+    role_has_permissions {
+        char permission_id PK
+        char role_id PK
+    }
+
+    roles {
+        char id PK
+        varchar name FK "."
+        varchar guard_name
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    sessions {
+        varchar id PK
+        char user_id FK
+        varchar ip_address
+        text user_agent
+        longtext payload
+        int last_activity FK
+    }
+
+    settings {
+        bigint id PK
+        varchar group FK "."
+        varchar key FK "."
+        text value
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    telescope_entries {
+        bigint sequence PK
+        char uuid UK
+        char batch_id FK
+        varchar family_hash FK
+        tinyint should_display_on_index
+        varchar type FK
+        longtext content
+        datetime created_at FK
+    }
+
+    telescope_entries_tags {
+        char entry_uuid PK
+        varchar tag PK
+    }
+
+    telescope_monitoring {
+        varchar tag PK
+    }
+
+    users {
+        char id PK
+        varchar type
+        varchar name
+        varchar username
+        varchar phone
+        varchar email UK
+        timestamp email_verified_at
+        varchar password
+        timestamp password_changed_at
+        tinyint is_active
+        tinyint is_developer
+        varchar timezone
+        timestamp last_login_at
+        varchar last_login_ip
+        tinyint to_be_logged_out
+        text keterangan
+        varchar status
+        varchar remember_token
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    user_cabangs {
+        char id PK
+        char user_id FK "users"
+        char cabang_id FK "cabangs"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    user_kas {
+        char id PK
+        char user_id FK "users"
+        char kas_id FK "kas"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    user_gudangs {
+        char id PK
+        char user_id FK "users"
+        char gudang_id FK "gudangs"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    mutasi_stoks {
+        char id PK
+        char cabang_id FK "cabangs"
+        datetime tanggal
+        char gudang_id FK "gudangs"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        char satuan_transaksi_id FK "satuans"
+        varchar reference_type FK
+        char reference_id
+        varchar header_type FK
+        char header_id
+        varchar jenis_transaksi
+        date expired_date "nullable"
+        varchar no_batch "nullable"
+        decimal jumlah
+        decimal jumlah_transaksi
+        decimal harga
+        decimal harga_transaksi
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    mutasi_transaksis {
+        char id PK
+        char cabang_id FK "cabangs"
+        datetime tanggal
+        varchar jenis
+        varchar vendor_type FK
+        char vendor_id
+        varchar reference_type FK
+        char reference_id
+        varchar header_type FK
+        char header_id
+        varchar jenis_transaksi
+        decimal jumlah
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    plans {
+        char id PK
+        varchar kode UK
+        varchar nama
+        int jumlah_cabang
+        int jumlah_user
+        decimal harga
+        int masa_aktif_hari
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    plan_details {
+        char id PK
+        char plan_id FK "plans"
+        varchar permission
+    }
+
+    billings {
+        char id PK
+        varchar kode UK
+        datetime tanggal
+        datetime tanggal_jatuh_tempo
+        char perusahaan_id FK "perusahaans"
+        bool is_pkp "default true"
+        bool is_include_ppn "default true"
+        decimal ppn_percent
+        varchar diskon_type "nullable, percent/value"
+        decimal diskon "nullable"
+        decimal beban_lain "nullable"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    billing_details {
+        char id PK
+        char billing_id FK "billings"
+        varchar item
+        decimal jumlah
+        decimal harga_satuan
+        varchar diskon_satuan_type "nullable, percent/value"
+        decimal diskon_satuan
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    permissions one to many role_has_permissions: ""
+    permissions one to many model_has_permissions: ""
+    roles one to many role_has_permissions: ""
+    roles one to many model_has_roles: ""
+    telescope_entries one to many telescope_entries_tags: ""

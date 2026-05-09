@@ -1,0 +1,469 @@
+---
+title: MASTER
+---
+erDiagram
+    perusahaans {
+        char id PK
+        varchar kode UK
+        varchar nama
+        text alamat
+        varchar kota
+        varchar provinsi
+        varchar kode_pos
+        varchar telp
+        varchar fax
+        varchar email
+        char user_id FK "users"
+        char plan_id FK "plans"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    cabangs {
+        char id PK
+        varchar kode UK
+        varchar nama
+        char perusahaan_id FK "perusahaans"
+        text alamat
+        varchar kota
+        varchar provinsi
+        varchar telp
+        varchar email
+        varchar ktp_nama "nullable"
+        varchar ktp_nomor "nullable"
+        varchar npwp_nama "nullable"
+        varchar npwp_nomor "nullable"
+        varchar sia_nama "nullable"
+        varchar sia_nomor "nullable"
+        date sia_berlaku "nullable"
+        varchar sipa_nama "nullable"
+        varchar sipa_nomor "nullable"
+        date sipa_berlaku "nullable"
+        bool is_pkp "default true"
+        bool is_ppn_include "default false"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    customers {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        varchar telp
+        varchar handphone
+        varchar whatsapp
+        varchar email
+        varchar fax
+        varchar website
+        text alamat
+        varchar kota
+        varchar kode_pos
+        varchar provinsi
+        int jatuh_tempo
+        decimal limit_piutang
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    suppliers {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        varchar telp
+        varchar handphone
+        varchar whatsapp
+        varchar email
+        varchar fax
+        varchar website
+        text alamat
+        varchar kota
+        varchar kode_pos
+        varchar provinsi
+        int jatuh_tempo
+        bool is_pkp "default true"
+        bool is_include_ppn "default false"
+        varchar rekening_bank
+        varchar rekening_nomor
+        varchar rekening_nama
+        varchar npwp
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    gudangs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    jabatans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        varchar no_ktp
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    karyawans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char jabatan_id FK "jabatans"
+        char user_id FK "users (nullable)"
+        varchar no_ktp
+        date tanggal_masuk
+        text alamat
+        varchar kota
+        varchar provinsi
+        varchar telp
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kas {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    metode_pembayarans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char kas_id FK "kas"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kategori_bebans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    bebans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char kategori_beban_id FK "kategori_bebans"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kategori_pendapatans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pendapatans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char kategori_pendapatan_id FK "kategori_pendapatans"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kategori_produks {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        bool is_stok
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    satuans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    golongan_obats {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pabriks {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text alamat
+        varchar kota
+        varchar kode_pos
+        varchar provinsi
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    produks {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char kategori_produk_id FK "kategori_produks"
+        char golongan_obat_id FK "golongan_obats (nullable)"
+        char pabrik_id FK "pabriks (nullable)"
+        char default_satuan_beli_id FK "satuans"
+        char default_satuan_jual_id FK "satuans"
+        char default_etiket_id FK "etikets (nullable)"
+        bool is_have_expired_date FK "default false"
+        bool is_have_no_batch FK "default false"
+        decimal stok_minimum
+        text komposisi
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    produk_satuans {
+        char id PK
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        decimal konversi
+        decimal harga_beli
+        decimal harga_jual
+        varchar barcode
+        bool is_satuan_dasar
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    printers {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        varchar ip "nullable"
+        varchar port "nullable"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kasirs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        char default_customer_id FK "customers"
+        char default_printer_id FK "printers (nullable)"
+        bool is_tampil_foto "default true"
+        bool is_tampil_stok_kosong "default false"
+        bool is_validasi_stok "default true"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kasir_users {
+        char id PK
+        char kasir_id FK "kasirs"
+        char user_id FK "users"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kasir_kas {
+        char id PK
+        char kasir_id FK "kasirs"
+        char kas_id FK "kas"
+        bool is_default "default false"
+        bool is_kas_kembalian "default false"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kasir_gudangs {
+        char id PK
+        char kasir_id FK "kasirs"
+        char gudang_id FK "gudangs"
+        bool is_default "default false"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    etikets {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    vouchers {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        bool is_masa_aktif "default false"
+        datetime tanggal_awal "nullable"
+        datetime tanggal_akhir "nullable"
+        bool is_isi_customer "default false"
+        bool is_have_kuota "default false"
+        decimal jumlah_kuota "nullable"
+        varchar diskon_type "nullable, percent/value"
+        decimal diskon "nullable"
+        decimal diskon_maksimal "nullable"
+        decimal minimal_belanja "nullable"
+        bool is_gabung_promo "default false"
+        bool is_gabung_voucher_lain "default false"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    promos {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        varchar nama
+        bool is_tanggal_aktif "default false"
+        datetime tanggal_awal "nullable"
+        datetime tanggal_akhir "nullable"
+        varchar jam_awal "nullable"
+        varchar jam_akhir "nullable"
+        bool is_have_kuota "default false"
+        decimal jumlah_kuota "nullable"
+        bool is_berlaku_di_faktur "default false"
+        bool is_berlaku_di_pos "default false"
+        bool is_berlaku_kelipatan "default false"
+        bool is_gabung_voucher "default false"
+        varchar operator_syarat "nullable, dan/atau"
+        varchar operator_manfaat "nullable, dan/atau"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    promo_cabangs {
+        char id PK
+        char promo_id FK "promos"
+        char cabang_id FK "cabangs"
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    promo_haris {
+        char id PK
+        char promo_id FK "promos"
+        varchar hari
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    promo_syarats {
+        char id PK
+        char promo_id FK "promos"
+        char jenis
+        char produk_id FK "produks, nullable"
+        char satuan_id FK "satuans, nullable"
+        decimal jumlah_minimal
+        decimal jumlah_maksimal
+        decimal minimal_transaksi
+        bool is_include_ppn
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    promo_manfaats {
+        char id PK
+        char promo_id FK "promos"
+        char jenis
+        char produk_id FK "produks, nullable"
+        char satuan_id FK "satuans, nullable"
+        decimal jumlah
+        varchar diskon_type "nullable, percent/value"
+        decimal diskon "nullable"
+        decimal diskon_maksimal "nullable"
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    kategori_bebans one to many bebans: ""
+    kategori_pendapatans one to many pendapatans: ""
+    kategori_produks one to many produks: ""
+    produks one to many produk_satuans: ""
+    satuans one to many produk_satuans: ""
+    kas one to many metode_pembayarans: ""
+    promos one to many promo_syarats: ""
+    promos one to many promo_hasils: ""
+

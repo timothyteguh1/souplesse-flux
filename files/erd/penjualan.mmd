@@ -1,0 +1,121 @@
+---
+title: PENJUALAN
+---
+erDiagram
+    pesanan_penjualans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char customer_id FK "customers"
+        bool is_pkp "default true"
+        bool is_include_ppn "default true"
+        decimal ppn_percent
+        varchar diskon_type "nullable, percent/value"
+        decimal diskon "nullable"
+        decimal beban_lain "nullable"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pesanan_penjualan_details {
+        char id PK
+        char pesanan_penjualan_id FK "pesanan_penjualans"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        decimal jumlah
+        decimal harga_satuan
+        varchar diskon_satuan_type "nullable, percent/value"
+        decimal diskon_satuan
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    faktur_penjualans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar jenis_transaksi
+        varchar kode UK
+        datetime tanggal
+        datetime tanggal_jatuh_tempo
+        char customer_id FK "customers"
+        char gudang_id FK "gudangs"
+        bool is_pkp "default true"
+        bool is_include_ppn "default true"
+        decimal ppn_percent
+        varchar diskon_type "nullable, percent/value"
+        decimal diskon "nullable"
+        decimal beban_lain "nullable"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    faktur_penjualan_details {
+        char id PK
+        char faktur_penjualan_id FK "faktur_penjualans"
+        char pesanan_penjualan_id FK "pesanan_penjualans, nullable"
+        char pesanan_penjualan_detail_id FK "pesanan_penjualan_details, nullable"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        decimal jumlah
+        decimal harga_satuan
+        varchar diskon_satuan_type "nullable, percent/value"
+        decimal diskon_satuan
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    faktur_penjualan_pembayarans {
+        char id PK
+        char faktur_penjualan_id FK "faktur_penjualans"
+        char kas_id FK "kas"
+        decimal jumlah
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    retur_penjualans {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char customer_id FK "customers"
+        char gudang_id FK "gudangs"
+        bool is_pkp "default true"
+        bool is_include_ppn "default true"
+        decimal ppn_percent
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    retur_penjualan_details {
+        char id PK
+        char retur_penjualan_id FK "retur_penjualans"
+        char faktur_penjualan_detail_id FK "faktur_penjualan_details"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        decimal jumlah
+        decimal harga_satuan
+        varchar diskon_satuan_type "nullable, percent/value"
+        decimal diskon_satuan
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    pesanan_penjualans one to many pesanan_penjualan_details: ""
+    pesanan_penjualans one to many faktur_penjualans: ""
+    pesanan_penjualan_details one to many faktur_penjualan_details: ""
+    faktur_penjualan_langsungs one to many faktur_penjualan_langsung_details: ""
+    faktur_penjualan_langsungs one to many faktur_penjualan_langsung_pembayarans: ""
+    faktur_penjualans one to many faktur_penjualan_details: ""

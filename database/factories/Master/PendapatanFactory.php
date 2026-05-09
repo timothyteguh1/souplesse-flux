@@ -1,0 +1,25 @@
+<?php
+
+namespace Database\Factories\Master;
+
+use App\Models\Master\Cabang;
+use App\Models\Master\Pendapatan;
+use App\Utilities\Constants\Const_Status;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class PendapatanFactory extends Factory
+{
+    protected $model = Pendapatan::class;
+
+    public function definition(): array
+    {
+        return [
+            'cabang_id' => Cabang::first()->id,
+            'nama' => $this->faker->word(),
+            'status' => $this->faker->randomElement([
+                Const_Status::AKTIF,
+                Const_Status::TIDAK_AKTIF,
+            ]),
+        ];
+    }
+}

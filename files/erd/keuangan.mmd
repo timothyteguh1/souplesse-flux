@@ -1,0 +1,80 @@
+---
+title: KEUANGAN
+---
+erDiagram
+    kas_keluars {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char kas_id FK "kas"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kas_keluar_details {
+        char id PK
+        char kas_keluar_id FK "kas_keluars"
+        char beban_id FK "bebans"
+        decimal jumlah
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kas_masuks {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char kas_id FK "kas"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kas_masuk_details {
+        char id PK
+        char kas_masuk_id FK "kas_masuks"
+        char pendapatan_id FK "pendapatans"
+        decimal jumlah
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transfer_kas {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char kas_asal_id FK "kas"
+        char kas_tujuan_id FK "kas"
+        decimal nominal
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    kas_bons {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char karyawan_id FK "karyawans"
+        char kas_keluar_id FK "kas"
+        decimal nominal
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    kas_keluars one to many kas_keluar_details: ""
+    kas_masuks one to many kas_masuk_details: ""
+    kas_bons one to many penerimaan_kas_bon_details: ""

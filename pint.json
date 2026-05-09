@@ -1,0 +1,11 @@
+{
+    "preset": "per",
+    "rules": {
+        "simplified_null_return": true,
+        "class_attributes_separation": {
+            "elements": {
+                "property": "none"
+            }
+        }
+    }
+}

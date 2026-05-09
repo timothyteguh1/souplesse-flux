@@ -1,0 +1,102 @@
+@php
+    $listMenu = [
+        [
+            'id' => 'system',
+            'idSidebar' => 'System',
+            'label' => 'System',
+            'icon' => 'mdi mdi-cog-outline',
+            'route' => null,
+            'active' => null,
+            'permissions' => null,
+            'children' => [
+                [
+                    'id' => 'user',
+                    'label' => 'User',
+                    'icon' => null,
+                    'route' => route('admin.system.user.index'),
+                    'active' => 'admin.system.user.*',
+                    'permissions' => ['admin.system.user', 'admin.system.user.index'],
+                    'children' => null,
+                ],
+                [
+                    'id' => 'role',
+                    'label' => 'Role',
+                    'icon' => null,
+                    'route' => route('admin.system.role.index'),
+                    'active' => 'admin.system.role.*',
+                    'permissions' => ['admin.system.role', 'admin.system.role.index'],
+                    'children' => null,
+                ],
+                // [
+                //     'id' => 'setting',
+                //     'idSidebar' => 'Setting',
+                //     'label' => 'Setting',
+                //     'icon' => null,
+                //     'route' => null,
+                //     'active' => null,
+                //     'permissions' => null,
+                //     'children' => [
+                //         [
+                //             'id' => 'perusahaan',
+                //             'label' => 'Perusahaan',
+                //             'icon' => null,
+                //             'route' => route('admin.system.setting.perusahaan'),
+                //             'active' => 'admin.system.setting.perusahaan',
+                //             'permissions' => ['admin.system.setting.perusahaan'],
+                //             'children' => null,
+                //         ],
+                //         [
+                //             'id' => 'stokawal',
+                //             'label' => 'Stok Awal',
+                //             'icon' => null,
+                //             'route' => route('admin.system.setting.stok-awal'),
+                //             'active' => 'admin.system.setting.stok-awal',
+                //             'permissions' => ['admin.system.setting.stok-awal'],
+                //             'children' => null,
+                //         ],
+                //     ],
+                // ],
+                [
+                    'id' => 'database',
+                    'idSidebar' => 'Database',
+                    'label' => 'Database',
+                    'icon' => null,
+                    'route' => null,
+                    'active' => null,
+                    'permissions' => null,
+                    'children' => [
+                        [
+                            'id' => 'backup',
+                            'label' => 'Backup',
+                            'icon' => null,
+                            'route' => route('admin.system.database.backup'),
+                            'active' => 'admin.system.database.backup',
+                            'permissions' => ['admin.system.database.backup'],
+                            'children' => null,
+                        ],
+                        [
+                            'id' => 'restore',
+                            'label' => 'Restore',
+                            'icon' => null,
+                            'route' => route('admin.system.database.restore'),
+                            'active' => 'admin.system.database.restore',
+                            'permissions' => ['admin.system.database.restore'],
+                            'children' => null,
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'activity_log',
+                    'label' => 'Activity Log',
+                    'icon' => null,
+                    'route' => route('admin.system.activity-log.index'),
+                    'active' => 'admin.system.activity-log.*',
+                    'permissions' => ['admin.system.activity-log', 'admin.system.activity-log.index'],
+                    'children' => null,
+                ],
+            ],
+        ],
+    ];
+@endphp
+
+<x-admin::utils.menu :title="'System'" :list-menu="$listMenu" />

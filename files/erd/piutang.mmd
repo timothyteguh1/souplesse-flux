@@ -1,0 +1,55 @@
+---
+title: PIUTANG
+---
+erDiagram
+    penerimaan_piutangs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        varchar vendor_type FK
+        char vendor_id
+        char kas_id_id FK "kas (nullable)"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    penerimaan_piutang_details {
+        char id PK
+        char penerimaan_piutang_id FK "penerimaan_piutangs"
+        char mutasi_transaksi_id FK "mutasi_transaksis"
+        decimal nominal
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    penerimaan_piutang_utangs {
+        char id PK
+        char penerimaan_piutang_id FK "penerimaan_piutangs"
+        char mutasi_transaksi_id FK "mutasi_transaksis"
+        decimal nominal
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    memo_debits {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        varchar vendor_type FK
+        char vendor_id
+        char kas_id FK "kas"
+        decimal nominal
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% RELATIONSHIP
+    penerimaan_piutangs one to many penerimaan_piutang_details: ""

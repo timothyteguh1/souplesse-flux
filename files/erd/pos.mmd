@@ -1,0 +1,111 @@
+---
+title: PENJUALAN
+---
+erDiagram
+    buka_kasirs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char kasir_id FK "kasirs"
+        char user_id FK "users"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    buka_kasir_details {
+        char id PK
+        char buka_kasir_id FK "buka_kasirs"
+        char kas_id FK "kas"
+        decimal nominal
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pos_invoices {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char customer_id FK "customers"
+        char gudang_id FK "gudangs"
+        char kasir_id FK "kasirs"
+        char user_id FK "users"
+        char kas_kembalian_id FK "kas (nullable)"
+        decimal nominal_kembalian "nullable"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pos_invoice_details {
+        char id PK
+        char pos_invoice_id FK "pos_invoices"
+        char produk_id FK "produks"
+        char satuan_id FK "satuans"
+        decimal jumlah
+        decimal harga
+        decimal diskon
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pos_invoice_pembayarans {
+        char id PK
+        char pos_invoice_id FK "pos_invoices"
+        char kas_id FK "kas"
+        decimal jumlah
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tutup_kasirs {
+        char id PK
+        char cabang_id FK "cabangs"
+        varchar kode UK
+        datetime tanggal
+        char buka_kasir_id FK "buka_kasirs"
+        char kasir_id FK "kasirs"
+        char user_id FK "users"
+        text keterangan
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tutup_kasir_details {
+        char id PK
+        char tutup_kasir_id FK "tutup_kasirs"
+        char kas_id FK "kas"
+        decimal nominal_awal
+        decimal nominal_sistem
+        decimal nominal_akhir
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tutup_kasir_invoices {
+        char id PK
+        char tutup_kasir_id FK "tutup_kasirs"
+        char pos_invoice_id FK "pos_invoices"
+        text keterangan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+
+%% RELATIONSHIP
+    buka_kasirs one to many buka_kasir_details: ""
+    buka_kasirs one to many pos_invoices: ""
+    buka_kasirs one to many tutup_kasirs: ""
+    pos_invoices one to many pos_invoice_details: ""
+    pos_invoices one to many pos_invoice_pembayarans: ""
+    tutup_kasirs one to many tutup_kasir_details: ""
+    tutup_kasirs one to many tutup_kasir_invoices: ""
