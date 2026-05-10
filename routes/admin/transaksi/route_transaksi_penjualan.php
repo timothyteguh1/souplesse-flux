@@ -64,17 +64,6 @@ Route::group([
         Route::get('edit/{obj}', \App\Livewire\Admin\Penjualan\FakturPenjualan\Edit::class)->name('edit');
     });
 
-    // admin.penjualan.pengiriman
-    Route::group([
-        'prefix' => 'pengiriman',
-        'as' => 'pengiriman.',
-    ], function () {
-        Route::get('', \App\Livewire\Admin\Penjualan\Pengiriman\Index::class)->name('index');
-        Route::get('create', \App\Livewire\Admin\Penjualan\Pengiriman\Create::class)->name('create');
-        Route::get('show/{obj}', \App\Livewire\Admin\Penjualan\Pengiriman\Show::class)->name('show');
-        Route::get('edit/{obj}', \App\Livewire\Admin\Penjualan\Pengiriman\Edit::class)->name('edit');
-    });
-
     // admin.penjualan.retur-penjualan
     Route::group([
         'prefix' => 'retur-penjualan',
