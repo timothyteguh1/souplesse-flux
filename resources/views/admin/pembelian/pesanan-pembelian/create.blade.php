@@ -79,24 +79,13 @@
                                                     placeholder="Masukkan jalan" disabled />
                                             </div>
 
-                                            <div class="col-12 mt-3">
+                                            <div class="col-12">
                                                 <x-admin::input.text :name="'kota'" prepend-text="Kota"
                                                     placeholder="Masukkan kota" disabled />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {{-- <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label"></label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.checkbox :name="'is_pkp'" :label="'PKP'"
-                                            :value="$is_pkp" :inline="true" :disabled="true" />
-
-                                        <x-admin::input.checkbox :name="'is_include_ppn'" :label="'Include PPN'"
-                                            :value="$is_include_ppn" :inline="true" :disabled="true" />
-                                    </div>
-                                </div> --}}
                             </div>
                         </div>
                     </div>
@@ -105,13 +94,9 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <x-admin::input.select2id :id="'input_produk_id'" :name="'input_produk_id'" :options="[]"
+                                    <x-admin::input.select2id :id="'input_produk_id'" :name="'input_produk_id'" :options="App\Utilities\SelectHelpers\Master\SH_Produk::stokCabangWithStok(false)"
                                         :defer="false" placeholder="Produk" />
                                 </div>
-                                {{-- <div class="col-md-4 col-12">
-                                    <x-admin::input.select2id :id="'input_satuan_id'" :name="'input_satuan_id'" :options="[]"
-                                        :defer="false" placeholder="Satuan" />
-                                </div> --}}
                                 <div class="col-md-2 col-12">
                                     <x-admin::input.number :name="'input_jumlah'" placeholder="Qty" />
                                 </div>
@@ -142,7 +127,7 @@
                                     <tr>
                                         <th width="5%" class="text-uppercase">No</th>
                                         <th width="20%" class="text-uppercase">Produk</th>
-                                        <th width="10%" class="text-uppercase">Satuan</th>
+                                        <th width="10%" class="text-uppercase">Model</th>
                                         <th width="10%" class="text-uppercase text-end">Qty</th>
                                         <th width="10%" class="text-uppercase text-end">Harga</th>
                                         <th class="text-uppercase text-end" colspan="2">Diskon</th>
@@ -159,7 +144,7 @@
                                                 {{ $item['produk_nama'] }}
                                             </td>
                                             <td>
-                                                {{ $item['satuan_nama'] }}
+                                                {{ $item['model_produk_nama'] }}
                                             </td>
                                             <td class="text-end">
                                                 {{ _number($item['jumlah']) }}
@@ -220,7 +205,7 @@
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th>PPN</th>
+                                            <th>PPN ({{ _number($ppn_percent) }}%)</th>
                                             <th class="text-end">
                                                 {{ _number($total_ppn) }}
                                             </th>

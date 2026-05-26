@@ -36,13 +36,14 @@ class Edit extends Component
     public $input_satuan_id;
     public $input_jumlah;
     public $input_harga_satuan;
-    public $input_diskon_satuan_type = Const_Umum::DISKON_TYPE_RP;
+    public $input_diskon_satuan_type = Const_Umum::DISKON_TYPE_PERCENT;
     public $input_diskon_satuan;
+    public $input_keterangan;
     public $index_edit_item = null;
     public $total = 0;
     public $total_dpp = 0;
     public $total_ppn = 0;
-    public $diskon_type = Const_Umum::DISKON_TYPE_RP;
+    public $diskon_type = Const_Umum::DISKON_TYPE_PERCENT;
     public $diskon = 0;
     public $beban_lain = 0;
     public $grandtotal = 0;
@@ -65,10 +66,10 @@ class Edit extends Component
             'items.*.harga_satuan' => [],
             'items.*.diskon_satuan_type' => [],
             'items.*.diskon_satuan' => [],
+            'items.*.keterangan' => [],
 
             'diskon_type' => ['required'],
             'diskon' => ['required'],
-            'beban_lain' => ['required'],
         ];
     }
 
@@ -92,7 +93,7 @@ class Edit extends Component
         $this->diskon = $this->obj->diskon;
         $this->beban_lain = $this->obj->beban_lain;
 
-        $details = $this->obj->details()->with(['produk', 'satuan'])->get();
+        $details = $this->obj->details()->with(['produk.modelProduk', 'satuan'])->get();
         $this->items = [];
 
         foreach ($details as $detail) {
@@ -102,10 +103,12 @@ class Edit extends Component
                 'produk_nama' => $detail->produk->nama,
                 'satuan_id' => optional($detail->satuan)->id,
                 'satuan_nama' => optional($detail->satuan)->nama,
+                'model_produk_nama' => $detail->produk->modelProduk?->nama,
                 'jumlah' => $detail->jumlah,
                 'harga_satuan' => $detail->harga_satuan,
                 'diskon_satuan' => $detail->diskon_satuan,
                 'diskon_satuan_type' => $detail->diskon_satuan_type,
+                'keterangan' => $detail->keterangan,
             ];
         }
     }
@@ -117,12 +120,12 @@ class Edit extends Component
         $this->reset(['alamat', 'kota', 'kode_pos', 'provinsi', 'is_pkp', 'is_include_ppn']);
 
         if ($supplier) {
-            $this->alamat = optional($supplier)->alamat;
-            $this->kota = optional($supplier)->kota;
-            $this->kode_pos = optional($supplier)->kode_pos;
-            $this->provinsi = optional($supplier)->provinsi;
-            $this->is_pkp = optional($supplier)->is_pkp;
-            $this->is_include_ppn = optional($supplier)->is_include_ppn;
+            $this->alamat = $supplier?->alamat;
+            $this->kota = $supplier?->kota;
+            $this->kode_pos = $supplier?->kode_pos;
+            $this->provinsi = $supplier?->provinsi;
+            $this->is_pkp = $supplier?->is_pkp;
+            $this->is_include_ppn = $supplier?->is_include_ppn;
 
             $options = SH_Produk::stokCabangWithStok(false, $this->supplier_id);
             $this->dispatch('refresh_dropdown_input_produk_id', [
@@ -156,6 +159,8 @@ class Edit extends Component
 
         $this->input_satuan_id = $produk->default_satuan_beli_id;
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);
+        $satuanPcs = Satuan::where('nama', 'PCS')->first();
+        $this->input_satuan_id = $satuanPcs->id;
         $this->updatedInputSatuanId();
     }
 
@@ -170,12 +175,12 @@ class Edit extends Component
             return;
         }
 
-        $produkSatuan = ProdukSatuan::query()
-            ->where('produk_id', $produk->id)
+        $produkSatuan = Produk::query()
+            ->where('id', $produk->id)
             ->where('satuan_id', $satuan->id)
             ->first();
 
-        $this->input_harga_satuan = $produkSatuan?->harga_satuan_beli ?? 0;
+        $this->input_harga_satuan = $produkSatuan?->harga_beli ?? 0;
     }
 
     public function calculateFooter()
@@ -289,6 +294,7 @@ class Edit extends Component
             'input_harga_satuan' => ['required'],
             'input_diskon_satuan_type' => [],
             'input_diskon_satuan' => [],
+            'input_keterangan' => [],
         ]);
 
         $produk = Produk::find($this->input_produk_id);
@@ -297,6 +303,7 @@ class Edit extends Component
         $diskon_satuan = $this->input_diskon_satuan ?: 0;
         $jumlah = $this->input_jumlah;
         $harga_satuan = $this->input_harga_satuan;
+        $keterangan = $this->input_keterangan;
 
         $this->items[] = [
             'id' => null,
@@ -304,13 +311,15 @@ class Edit extends Component
             'produk_nama' => $produk->nama,
             'satuan_id' => $satuan->id,
             'satuan_nama' => $satuan->nama,
+            'model_produk_nama' => $produk->modelProduk?->nama,
             'jumlah' => $jumlah,
             'harga_satuan' => $harga_satuan,
             'diskon_satuan' => $diskon_satuan,
             'diskon_satuan_type' => $diskon_satuan_type,
+            'keterangan' => $keterangan,
         ];
 
-        $this->reset('input_produk_id', 'input_satuan_id', 'input_jumlah', 'input_harga_satuan', 'input_diskon_satuan', 'index_edit_item');
+        $this->resetDetail();
     }
 
     public function editItem()
@@ -329,6 +338,7 @@ class Edit extends Component
             'input_harga_satuan' => ['required'],
             'input_diskon_satuan_type' => [],
             'input_diskon_satuan' => [],
+            'input_keterangan' => [],
         ]);
 
         $produk = Produk::find($this->input_produk_id);
@@ -337,6 +347,7 @@ class Edit extends Component
         $diskon_satuan = $this->input_diskon_satuan ?: 0;
         $jumlah = $this->input_jumlah;
         $harga_satuan = $this->input_harga_satuan;
+        $keterangan = $this->input_keterangan;
 
         $this->items[$this->index_edit_item] = [
             'id' => $this->items[$this->index_edit_item]['id'],
@@ -344,13 +355,28 @@ class Edit extends Component
             'produk_nama' => $produk->nama,
             'satuan_id' => $satuan->id,
             'satuan_nama' => $satuan->nama,
+            'model_produk_nama' => $produk->modelProduk?->nama,
             'jumlah' => $jumlah,
             'harga_satuan' => $harga_satuan,
             'diskon_satuan' => $diskon_satuan,
             'diskon_satuan_type' => $diskon_satuan_type,
+            'keterangan' => $keterangan,
         ];
 
-        $this->reset('input_produk_id', 'input_satuan_id', 'input_jumlah', 'input_harga_satuan', 'input_diskon_satuan', 'index_edit_item');
+        $this->resetDetail();
+    }
+
+    private function resetDetail()
+    {
+        $this->reset(
+            'input_produk_id',
+            'input_satuan_id',
+            'input_jumlah',
+            'input_harga_satuan',
+            'input_diskon_satuan',
+            'input_keterangan',
+            'index_edit_item'
+        );
     }
 
     public function edit($index)
@@ -364,7 +390,7 @@ class Edit extends Component
         $this->input_satuan_id = $item['satuan_id'];
         $this->input_jumlah = $item['jumlah'];
         $this->input_harga_satuan = $item['harga_satuan'];
-        $this->input_diskon_satuan_type = $item['diskon_satuan_type'] ?: Const_Umum::DISKON_TYPE_RP;
+        $this->input_diskon_satuan_type = $item['diskon_satuan_type'] ?: Const_Umum::DISKON_TYPE_PERCENT;
         $this->input_diskon_satuan = $item['diskon_satuan'];
 
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);

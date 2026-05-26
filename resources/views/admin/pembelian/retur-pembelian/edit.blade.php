@@ -34,7 +34,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <div class="col-lg-9">
-                                        <x-admin::input.text :name="'kode'" placeholder="(OTOMATIS)" />
+                                        <x-admin::input.readonly :value="$kode" />
                                     </div>
                                 </div>
 
@@ -56,17 +56,6 @@
                                     <div class="col-lg-9">
                                         <x-admin::input.select2id :id="'supplier_id'" :name="'supplier_id'" :defer="false"
                                             :options="\App\Utilities\SelectHelpers\Master\SH_Supplier::active()" placeholder="- Pilih Supplier -" />
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label">
-                                        Gudang
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.select2id :id="'gudang_id'" :name="'gudang_id'" :defer="false"
-                                            :options="\App\Utilities\SelectHelpers\Master\SH_Gudang::user()" placeholder="- Pilih Gudang -" />
                                     </div>
                                 </div>
 
@@ -108,17 +97,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label"></label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.checkbox :name="'is_pkp'" :label="'PKP'"
-                                            :value="$is_pkp" :inline="true" :disabled="true" />
-
-                                        <x-admin::input.checkbox :name="'is_include_ppn'" :label="'Include PPN'"
-                                            :value="$is_include_ppn" :inline="true" :disabled="true" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -127,26 +105,22 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-3 col-12">
-                                    <x-admin::input.select2id :id="'input_faktur_pembelian_id'" :name="'input_faktur_pembelian_id'" :options="\App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_FakturPembelian::all(
+                                    <x-admin::input.select2id :id="'input_pesanan_pembelian_id'" :name="'input_pesanan_pembelian_id'" :options="\App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_PesananPembelian::selesai(
                                         $supplier_id,
                                         is_show_sisa_utang: false,
                                     )"
-                                        :defer="false" placeholder="Pilih Faktur Pembelian" />
+                                        :defer="false" placeholder="Pilih Pesanan Pembelian" />
                                 </div>
-                                <div class="col-md-3 col-12">
-                                    <x-admin::input.select2id :id="'input_faktur_pembelian_detail_id'" :name="'input_faktur_pembelian_detail_id'" :options="[]"
+                                <div class="col-md-6 col-12">
+                                    <x-admin::input.select2id :id="'input_pesanan_pembelian_detail_id'" :name="'input_pesanan_pembelian_detail_id'" :options="[]"
                                         :defer="false" placeholder="Produk" />
-                                </div>
-                                <div class="col-md-3 col-12">
-                                    <x-admin::input.select2id :id="'input_satuan_id'" :name="'input_satuan_id'" :options="[]"
-                                        :defer="false" placeholder="Satuan" />
                                 </div>
                                 <div class="col-md-3 col-12">
                                     <x-admin::input.number :name="'input_jumlah'" placeholder="Qty" />
                                 </div>
                                 <div class="col-md-3 col-12">
-                                    <x-admin::input.readonly :value="_date_format_output($input_tanggal_faktur)" :name="'input_tanggal_faktur'"
-                                        placeholder="Tanggal Faktur" />
+                                    <x-admin::input.readonly :value="_date_format_output($input_tanggal_pesanan)" :name="'input_tanggal_pesanan'"
+                                        placeholder="Tanggal Pesanan" />
                                 </div>
                                 <div class="col-md-3 col-12">
                                     <x-admin::input.readonly :value="$input_harga_satuan ? _number($input_harga_satuan) : ''" :name="'input_harga_satuan'"
@@ -172,10 +146,8 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th width="5%" class="text-uppercase">No</th>
-                                        <th width="10%" class="text-uppercase">No. Faktur <br> Pembelian</th>
-                                        <th width="10%" class="text-uppercase">No. Faktur <br> Pembelian Supplier
-                                        </th>
-                                        <th width="10%" class="text-uppercase">Tanggal Faktur</th>
+                                        <th width="10%" class="text-uppercase">No. Pesanan <br> Pembelian</th>
+                                        <th width="10%" class="text-uppercase">Tanggal Pesanan</th>
                                         <th width="10%" class="text-uppercase">Produk</th>
                                         <th width="10%" class="text-uppercase text-end">Qty</th>
                                         <th width="10%" class="text-uppercase text-end">Harga Beli Satuan</th>
@@ -189,13 +161,10 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>
-                                                {{ $item['faktur_pembelian_kode'] }}
+                                                {{ $item['pesanan_pembelian_kode'] }}
                                             </td>
                                             <td>
-                                                {{ $item['faktur_pembelian_supplier_kode'] }}
-                                            </td>
-                                            <td>
-                                                {{ $item['tanggal_faktur'] }}
+                                                {{ $item['tanggal_pesanan'] }}
                                             </td>
                                             <td>
                                                 {{ $item['produk_nama'] }}

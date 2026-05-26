@@ -52,34 +52,13 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Gudang</th>
-                    <td>
-                        <a href="{{ $obj->gudang->getRouteShow() }}">
-                            {{ $obj->gudang->kode }} -
-                            {{ $obj->gudang->nama }}
-                        </a>
-                    </td>
-                </tr>
-                <tr>
-                    <th>PKP</th>
-                    <td>{{ $obj->is_pkp ? 'Ya' : 'Tidak' }}</td>
-                </tr>
-                {{-- <tr>
-                    <th>Include PPN</th>
-                    <td>{{ $obj->is_include_ppn ? 'Ya' : 'Tidak' }}</td>
-                </tr>
-                <tr>
-                    <th>PPN Percent</th>
-                    <td>{{ _number($obj->ppn_percent) }}%</td>
-                </tr> --}}
-                <tr>
                     <th>Keterangan</th>
                     <td>{!! nl2br(e($obj->keterangan)) !!}</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <th>Status</th>
                     <td>{{ $obj->status }}</td>
-                </tr>
+                </tr> --}}
             </x-admin::includes.pages.show-attributes-card>
 
             <div class="card">
@@ -95,9 +74,8 @@
                             <thead>
                                 <tr class="bg-light">
                                     <th width="5%" class="text-uppercase">No</th>
-                                    <th width="10%" class="text-uppercase">No. Faktur Pembelian</th>
-                                    <th width="10%" class="text-uppercase">No. Faktur Pembelian Supplier</th>
-                                    <th width="10%" class="text-uppercase">Tanggal Faktur</th>
+                                    <th width="10%" class="text-uppercase">No. Pesanan Pembelian</th>
+                                    <th width="10%" class="text-uppercase">Tanggal Pesanan</th>
                                     <th width="10%" class="text-uppercase">Produk</th>
                                     <th width="10%" class="text-uppercase text-end">Qty</th>
                                     <th width="10%" class="text-uppercase text-end">Harga Beli Satuan</th>
@@ -107,21 +85,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($obj->details()->with(['fakturPembelianDetail.header', 'produk', 'satuan'])->get() as $detail)
+                                @foreach ($obj->details()->with(['pesananPembelianDetail.header', 'produk', 'satuan'])->get() as $detail)
                                     <tr>
                                         <td class="text-center">
                                             {{ $loop->iteration }}
                                         </td>
                                         <td>
-                                            <a href="{{ $detail->fakturPembelianDetail->header->getRouteShow() }}">
-                                                {{ $detail->fakturPembelianDetail->header->kode }}
+                                            <a href="{{ $detail->pesananPembelianDetail->header->getRouteShow() }}">
+                                                {{ $detail->pesananPembelianDetail->header->kode }}
                                             </a>
                                         </td>
                                         <td>
-                                            {{ $detail->fakturPembelianDetail->header->kode_faktur_supplier }}
-                                        </td>
-                                        <td>
-                                            {{ _date_format_output($detail->fakturPembelianDetail->header->tanggal) }}
+                                            {{ _date_format_output($detail->pesananPembelianDetail->header->tanggal) }}
                                         </td>
                                         <td>
                                             <a href="{{ $detail->produk->getRouteShow() }}">
@@ -149,25 +124,25 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="9" class="text-end">Total</th>
+                                    <th colspan="8" class="text-end">Total</th>
                                     <th class="text-end">
                                         {{ _number($obj->total) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="9" class="text-end">DPP</th>
+                                    <th colspan="8" class="text-end">DPP</th>
                                     <th class="text-end">
                                         {{ _number($obj->dpp) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="9" class="text-end">PPN ({{ _number($obj->ppn_percent) }}%)</th>
+                                    <th colspan="8" class="text-end">PPN ({{ _number($obj->ppn_percent) }}%)</th>
                                     <th class="text-end">
                                         {{ _number($obj->ppn) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="9" class="text-end">Grand Total</th>
+                                    <th colspan="8" class="text-end">Grand Total</th>
                                     <th class="text-end">
                                         {{ _number($obj->grandtotal) }}
                                     </th>

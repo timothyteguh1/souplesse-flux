@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->boolean('is_pkp')->default(true);
             $table->boolean('is_include_ppn')->default(true);
             $table->decimal('ppn_percent', 18, 4);
+            $table->decimal('pembulatan_rupiah', 18, 4)->nullable();
             $table->string('diskon_type')->nullable();
             $table->decimal('diskon', 18, 4)->default(0);
             $table->text('keterangan')->nullable();

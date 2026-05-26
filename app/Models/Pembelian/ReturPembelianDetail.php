@@ -17,7 +17,15 @@ class ReturPembelianDetail extends Model
     use HasMutasiStok;
 
     protected $fillable = [
-        'retur_pembelian_id', 'faktur_pembelian_detail_id', 'produk_id', 'satuan_id', 'jumlah', 'harga_satuan', 'diskon_satuan_type', 'diskon_satuan', 'keterangan',
+        'retur_pembelian_id',
+        'pesanan_pembelian_detail_id',
+        'produk_id',
+        'satuan_id',
+        'jumlah',
+        'harga_satuan',
+        'diskon_satuan_type',
+        'diskon_satuan',
+        'keterangan',
     ];
 
     // region Relationships
@@ -31,9 +39,9 @@ class ReturPembelianDetail extends Model
         return $this->belongsTo(ReturPembelian::class);
     }
 
-    public function fakturPembelianDetail(): BelongsTo
+    public function pesananPembelianDetail(): BelongsTo
     {
-        return $this->belongsTo(FakturPembelianDetail::class);
+        return $this->belongsTo(PesananPembelianDetail::class);
     }
 
     public function produk(): BelongsTo

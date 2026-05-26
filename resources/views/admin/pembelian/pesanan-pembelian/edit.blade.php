@@ -82,30 +82,11 @@
                                                     placeholder="Masukkan jalan" disabled />
                                             </div>
 
-                                            <div class="col-6">
+                                            <div class="col-12">
                                                 <x-admin::input.text :name="'kota'" prepend-text="Kota"
                                                     placeholder="Masukkan kota" disabled />
                                             </div>
-                                            <div class="col-6">
-                                                <x-admin::input.text :name="'kode_pos'" prepend-text="K. Pos"
-                                                    placeholder="Masukkan kode pos" disabled />
-                                            </div>
-                                            <div class="col-12 mt-3">
-                                                <x-admin::input.text :name="'provinsi'" prepend-text="Provinsi"
-                                                    placeholder="Masukkan provinsi" disabled />
-                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label"></label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.checkbox :name="'is_pkp'" :label="'PKP'"
-                                            :value="$is_pkp" :inline="true" :disabled="true" />
-
-                                        <x-admin::input.checkbox :name="'is_include_ppn'" :label="'Include PPN'"
-                                            :value="$is_include_ppn" :inline="true" :disabled="true" />
                                     </div>
                                 </div>
                             </div>
@@ -115,29 +96,28 @@
                     <div class="card-body pt-4 border-top">
                         <div class="mb-3">
                             <div class="row g-3">
-                                <div class="col-md-8 col-12">
+                                <div class="col-12">
                                     <x-admin::input.select2id :id="'input_produk_id'" :name="'input_produk_id'" :options="\App\Utilities\SelectHelpers\Master\SH_Produk::stokCabangWithStok(
                                         false,
                                         $supplier_id,
                                     )"
                                         :defer="false" placeholder="Produk" />
                                 </div>
-                                <div class="col-md-4 col-12">
-                                    <x-admin::input.select2id :id="'input_satuan_id'" :name="'input_satuan_id'" :options="[]"
-                                        :defer="false" placeholder="Satuan" />
-                                </div>
                                 <div class="col-md-2 col-12">
                                     <x-admin::input.number :name="'input_jumlah'" placeholder="Qty" />
                                 </div>
-                                <div class="col-md-4 col-12">
+                                <div class="col-md-3 col-12">
                                     <x-admin::input.number :name="'input_harga_satuan'" placeholder="Harga" />
                                 </div>
-                                <div class="col-md-4 col-12">
+                                <div class="col-md-3 col-12">
                                     <x-admin::input.diskon :type="'input_diskon_satuan_type'" :name="'input_diskon_satuan'"
                                         placeholder="Diskon Satuan" />
                                 </div>
+                                <div class="col-md-4 col-12">
+                                    <x-admin::input.text :type="'input_keterangan'" :name="'input_keterangan'" placeholder="Note" />
+                                </div>
 
-                                <div class="col-md-2 col-12">
+                                <div class="col-12">
                                     @if ($index_edit_item === null)
                                         <x-admin::buttons.create-add-item :action="'addItem'" />
                                     @else
@@ -153,11 +133,12 @@
                                     <tr>
                                         <th width="5%" class="text-uppercase">No</th>
                                         <th width="25%" class="text-uppercase">Produk</th>
-                                        <th width="10%" class="text-uppercase">Satuan</th>
+                                        <th width="10%" class="text-uppercase">Model</th>
                                         <th width="10%" class="text-uppercase text-end">Qty</th>
                                         <th width="10%" class="text-uppercase text-end">Harga</th>
                                         <th class="text-uppercase text-end" colspan="2">Diskon</th>
                                         <th width="15%" class="text-uppercase text-end">Subtotal</th>
+                                        <th width="10%" class="text-uppercase">Note</th>
                                         <th width="10%" class="text-uppercase text-end">Action</th>
                                     </tr>
                                 </thead>
@@ -169,7 +150,7 @@
                                                 {{ $item['produk_nama'] }}
                                             </td>
                                             <td>
-                                                {{ $item['satuan_nama'] }}
+                                                {{ $item['model_produk_nama'] }}
                                             </td>
                                             <td class="text-end">
                                                 {{ _number($item['jumlah']) }}
@@ -185,6 +166,9 @@
                                             </td>
                                             <td class="text-end">
                                                 {{ _number($item['subtotal']) }}
+                                            </td>
+                                            <td>
+                                                {{ $item['keterangan'] }}
                                             </td>
                                             <td class="text-end">
                                                 <button type="button" wire:click="edit({{ $loop->index }})"
@@ -221,20 +205,13 @@
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th>Beban Lainnya</th>
-                                            <th class="text-end">
-                                                <x-admin::input.number :name="'beban_lain'" placeholder="Beban Lainnya"
-                                                    :defer="false" class="text-end" />
-                                            </th>
-                                        </tr>
-                                        <tr>
                                             <th>DPP</th>
                                             <th class="text-end">
                                                 {{ _number($total_dpp) }}
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th>PPN</th>
+                                            <th>PPN ({{ _number($ppn_percent) }}%)</th>
                                             <th class="text-end">
                                                 {{ _number($total_ppn) }}
                                             </th>

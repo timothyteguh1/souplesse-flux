@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('retur_pembelian_details', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('retur_pembelian_id')->index()->constrained('retur_pembelians');
-            $table->foreignUuid('faktur_pembelian_detail_id')->index()->constrained('faktur_pembelian_details');
+            $table->foreignUuid('pesanan_pembelian_detail_id')->index()->constrained('pesanan_pembelian_details');
             $table->foreignUuid('produk_id')->index()->constrained('produks');
             $table->foreignUuid('satuan_id')->index()->constrained('satuans');
             $table->decimal('jumlah', 18, 4);

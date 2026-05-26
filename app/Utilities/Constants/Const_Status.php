@@ -12,7 +12,7 @@ class Const_Status
     public const PESANAN_PEMBELIAN_MENUNGGU_PERSETUJUAN = 'Menunggu Persetujuan';
     public const PESANAN_PEMBELIAN_DITOLAK = 'Ditolak';
     public const PESANAN_PEMBELIAN_BELUM_DITERIMA = 'Belum Diterima';
-    public const PESANAN_PEMBELIAN_BELUM_SELESAI = 'Belum Selesai';
+    public const PESANAN_PEMBELIAN_DALAM_PENGIRIMAN = 'Dalam Pengiriman';
     public const PESANAN_PEMBELIAN_SELESAI = 'Selesai';
     public const PESANAN_PEMBELIAN_DITUTUP = 'Ditutup';
 

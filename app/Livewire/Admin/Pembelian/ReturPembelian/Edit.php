@@ -10,13 +10,13 @@ use App\Models\Master\ProdukSatuan;
 use App\Traits\Livewire\WithEditForm;
 use App\Utilities\Constants\Const_Umum;
 use App\Models\Pembelian\ReturPembelian;
-use App\Models\Pembelian\FakturPembelian;
+use App\Models\Pembelian\PesananPembelian;
 use App\Models\Pembelian\ReturPembelianDetail;
-use App\Models\Pembelian\FakturPembelianDetail;
+use App\Models\Pembelian\PesananPembelianDetail;
 use App\Services\Pembelian\ReturPembelianService;
 use App\Utilities\SelectHelpers\Master\SH_Produk;
-use App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_FakturPembelian;
-use App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_FakturPembelianDetail;
+use App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_PesananPembelian;
+use App\Utilities\SelectHelpers\Transaksi\Pembelian\SH_PesananPembelianDetail;
 
 class Edit extends Component
 {
@@ -38,11 +38,11 @@ class Edit extends Component
     public bool $is_include_ppn = false;
     public $ppn_percent;
     public $items = [];
-    public $input_faktur_pembelian_id;
-    public $input_faktur_pembelian_detail_id;
+    public $input_pesanan_pembelian_id;
+    public $input_pesanan_pembelian_detail_id;
     public $input_satuan_id;
     public $input_jumlah;
-    public $input_tanggal_faktur;
+    public $input_tanggal_pesanan;
     public $input_harga_satuan;
     public $input_diskon_satuan;
     public $index_edit_item = null;
@@ -64,7 +64,7 @@ class Edit extends Component
 
             'items' => ['required', 'array'],
             'items.*.id' => [],
-            'items.*.faktur_pembelian_detail_id' => [],
+            'items.*.pesanan_pembelian_detail_id' => [],
             'items.*.produk_id' => [],
             'items.*.satuan_id' => [],
             'items.*.jumlah' => [],
@@ -91,13 +91,13 @@ class Edit extends Component
         $this->is_include_ppn = $this->obj->is_include_ppn;
         $this->ppn_percent = $this->obj->ppn_percent;
 
-        $details = $this->obj->details()->with(['produk', 'satuan', 'fakturPembelianDetail.header'])->get();
+        $details = $this->obj->details()->with(['produk', 'satuan', 'pesananPembelianDetail.header'])->get();
         $this->items = [];
 
         foreach ($details as $detail) {
             $this->items[] = [
                 'id' => $detail->id,
-                'faktur_pembelian_detail_id' => $detail->faktur_pembelian_detail_id,
+                'pesanan_pembelian_detail_id' => $detail->pesanan_pembelian_detail_id,
                 'produk_id' => $detail->produk_id,
                 'satuan_id' => $detail->satuan_id,
                 'jumlah' => $detail->jumlah,
@@ -105,10 +105,10 @@ class Edit extends Component
                 'diskon_satuan' => $detail->diskon_satuan,
                 'diskon_satuan_type' => $detail->diskon_satuan_type,
 
-                'faktur_pembelian_id' => $detail->fakturPembelianDetail->header?->id,
-                'faktur_pembelian_kode' => $detail->fakturPembelianDetail->header?->kode,
-                'faktur_pembelian_supplier_kode' => $detail->fakturPembelianDetail->header?->kode_faktur_supplier,
-                'tanggal_faktur' => $detail->fakturPembelianDetail->header->tanggal,
+                'pesanan_pembelian_id' => $detail->pesananPembelianDetail->header?->id,
+                'pesanan_pembelian_kode' => $detail->pesananPembelianDetail->header?->kode,
+                'pesanan_pembelian_supplier_kode' => $detail->pesananPembelianDetail->header?->kode_pesanan_supplier,
+                'tanggal_pesanan' => $detail->pesananPembelianDetail->header->tanggal,
                 'produk_nama' => $detail->produk->nama,
                 'satuan_nama' => $detail->satuan->nama,
             ];
@@ -127,33 +127,33 @@ class Edit extends Component
 
         $this->items = [];
 
-        $options = SH_FakturPembelian::all($this->supplier_id, is_show_sisa_utang: false);
-        $this->dispatch('refresh_dropdown_input_faktur_pembelian_id', [
+        $options = SH_PesananPembelian::selesai($this->supplier_id, is_show_sisa_utang: false);
+        $this->dispatch('refresh_dropdown_input_pesanan_pembelian_id', [
             'options' => $options,
             'value' => null,
         ]);
-        $this->reset('input_faktur_pembelian_id', 'input_faktur_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_faktur', 'input_harga_satuan', 'input_diskon_satuan');
+        $this->reset('input_pesanan_pembelian_id', 'input_pesanan_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_pesanan', 'input_harga_satuan', 'input_diskon_satuan');
     }
 
-    public function updatedInputFakturPembelianId()
+    public function updatedInputPesananPembelianId()
     {
-        $this->reset('input_faktur_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_faktur', 'input_harga_satuan', 'input_diskon_satuan');
+        $this->reset('input_pesanan_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_pesanan', 'input_harga_satuan', 'input_diskon_satuan');
 
-        $fakturPembelian = FakturPembelian::find($this->input_faktur_pembelian_id);
-        $this->input_tanggal_faktur = $fakturPembelian?->tanggal;
+        $pesananPembelian = PesananPembelian::find($this->input_pesanan_pembelian_id);
+        $this->input_tanggal_pesanan = $pesananPembelian?->tanggal;
 
-        $options = SH_FakturPembelianDetail::detailProduk($this->input_faktur_pembelian_id);
-        $this->dispatch('refresh_dropdown_input_faktur_pembelian_detail_id', [
+        $options = SH_PesananPembelianDetail::detailProduk($this->input_pesanan_pembelian_id);
+        $this->dispatch('refresh_dropdown_input_pesanan_pembelian_detail_id', [
             'options' => $options,
             'value' => null,
         ]);
-        $this->updatedInputFakturPembelianDetailId();
+        $this->updatedInputPesananPembelianDetailId();
     }
 
-    public function updatedInputFakturPembelianDetailId()
+    public function updatedInputPesananPembelianDetailId()
     {
-        $fakturPembelianDetail = FakturPembelianDetail::find($this->input_faktur_pembelian_detail_id);
-        $produk = Produk::find($fakturPembelianDetail?->produk_id);
+        $pesananPembelianDetail = PesananPembelianDetail::find($this->input_pesanan_pembelian_detail_id);
+        $produk = Produk::find($pesananPembelianDetail?->produk_id);
 
         if (!$produk) {
             $this->dispatch('refresh_dropdown_input_satuan_id', [
@@ -174,29 +174,29 @@ class Edit extends Component
             'value' => null,
         ]);
 
-        $produkTerretur = ReturPembelianDetail::where('faktur_pembelian_detail_id', $this->input_faktur_pembelian_detail_id)->sum('jumlah');
+        $produkTerretur = ReturPembelianDetail::where('pesanan_pembelian_detail_id', $this->input_pesanan_pembelian_detail_id)->sum('jumlah');
 
-        $this->input_satuan_id = $fakturPembelianDetail->satuan_id;
-        $this->input_harga_satuan = $fakturPembelianDetail->harga_satuan;
-        $this->input_diskon_satuan = $fakturPembelianDetail->diskon_satuan_rupiah + $fakturPembelianDetail->diskon_satuan_footer - $fakturPembelianDetail->beban_satuan_footer;
-        $this->input_jumlah = $fakturPembelianDetail->jumlah - $produkTerretur;
+        $this->input_satuan_id = $pesananPembelianDetail->satuan_id;
+        $this->input_harga_satuan = $pesananPembelianDetail->harga_satuan;
+        $this->input_diskon_satuan = $pesananPembelianDetail->diskon_satuan_rupiah + $pesananPembelianDetail->diskon_satuan_footer - $pesananPembelianDetail->beban_satuan_footer;
+        $this->input_jumlah = $pesananPembelianDetail->jumlah - $produkTerretur;
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);
         $this->updatedInputSatuanId();
     }
 
     public function updatedInputSatuanId()
     {
-        $fakturPembelianDetail = FakturPembelianDetail::find($this->input_faktur_pembelian_detail_id);
-        if (!$fakturPembelianDetail) {
+        $pesananPembelianDetail = PesananPembelianDetail::find($this->input_pesanan_pembelian_detail_id);
+        if (!$pesananPembelianDetail) {
             return;
         }
 
-        if ($fakturPembelianDetail->satuan_id == $this->input_satuan_id) {
-            $this->input_harga_satuan = $fakturPembelianDetail->harga_satuan;
+        if ($pesananPembelianDetail->satuan_id == $this->input_satuan_id) {
+            $this->input_harga_satuan = $pesananPembelianDetail->harga_satuan;
             return;
         }
 
-        $produk = Produk::find($fakturPembelianDetail->produk_id);
+        $produk = Produk::find($pesananPembelianDetail->produk_id);
         $satuan = Satuan::find($this->input_satuan_id);
 
         if (!$produk || !$satuan) {
@@ -210,7 +210,7 @@ class Edit extends Component
 
         $produkSatuanLama = ProdukSatuan::query()
             ->where('produk_id', $produk->id)
-            ->where('satuan_id', $fakturPembelianDetail->satuan_id)
+            ->where('satuan_id', $pesananPembelianDetail->satuan_id)
             ->first();
 
         $this->input_harga_satuan = $this->input_harga_satuan * ($produkSatuan?->konversi / $produkSatuanLama?->konversi);
@@ -307,17 +307,17 @@ class Edit extends Component
         }
 
         $this->validate([
-            'input_faktur_pembelian_id' => ['required'],
-            'input_faktur_pembelian_detail_id' => ['required'],
+            'input_pesanan_pembelian_id' => ['required'],
+            'input_pesanan_pembelian_detail_id' => ['required'],
             'input_satuan_id' => ['required'],
             'input_jumlah' => ['required', 'numeric', 'min:0'],
-            'input_tanggal_faktur' => ['required'],
+            'input_tanggal_pesanan' => ['required'],
             'input_harga_satuan' => ['required'],
             'input_diskon_satuan' => ['required'],
         ]);
 
-        $fakturPembelianDetail = FakturPembelianDetail::find($this->input_faktur_pembelian_detail_id);
-        $produk = Produk::find($fakturPembelianDetail->produk_id);
+        $pesananPembelianDetail = PesananPembelianDetail::find($this->input_pesanan_pembelian_detail_id);
+        $produk = Produk::find($pesananPembelianDetail->produk_id);
         $satuan = Satuan::find($this->input_satuan_id);
         $diskon_satuan_type = Const_Umum::DISKON_TYPE_RP;
         $diskon_satuan = $this->input_diskon_satuan ?: 0;
@@ -326,7 +326,7 @@ class Edit extends Component
 
         $this->items[] = [
             'id' => null,
-            'faktur_pembelian_detail_id' => $this->input_faktur_pembelian_detail_id,
+            'pesanan_pembelian_detail_id' => $this->input_pesanan_pembelian_detail_id,
             'produk_id' => $produk->id,
             'satuan_id' => $satuan->id,
             'jumlah' => $jumlah,
@@ -334,15 +334,16 @@ class Edit extends Component
             'diskon_satuan' => $diskon_satuan,
             'diskon_satuan_type' => $diskon_satuan_type,
 
-            'faktur_pembelian_id' => $fakturPembelianDetail->header?->id,
-            'faktur_pembelian_kode' => $fakturPembelianDetail->header?->kode,
-            'tanggal_faktur' => $this->input_tanggal_faktur,
+            'pesanan_pembelian_id' => $pesananPembelianDetail->header?->id,
+            'pesanan_pembelian_kode' => $pesananPembelianDetail->header?->kode,
+            'pesanan_pembelian_supplier_kode' => $pesananPembelianDetail->header?->kode_pesanan_supplier,
+            'tanggal_pesanan' => $this->input_tanggal_pesanan,
             'produk_nama' => $produk->nama,
             'satuan_nama' => $satuan->nama,
         ];
 
-        $this->reset('input_faktur_pembelian_id', 'input_faktur_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_faktur', 'input_harga_satuan', 'input_diskon_satuan');
-        $this->updatedInputFakturPembelianId();
+        $this->reset('input_pesanan_pembelian_id', 'input_pesanan_pembelian_detail_id', 'input_satuan_id', 'input_jumlah', 'input_tanggal_pesanan', 'input_harga_satuan', 'input_diskon_satuan');
+        $this->updatedInputPesananPembelianId();
     }
 
     public function editItem()
@@ -362,17 +363,17 @@ class Edit extends Component
         }
 
         $this->validate([
-            'input_faktur_pembelian_id' => ['required'],
-            'input_faktur_pembelian_detail_id' => ['required'],
+            'input_pesanan_pembelian_id' => ['required'],
+            'input_pesanan_pembelian_detail_id' => ['required'],
             'input_satuan_id' => ['required'],
             'input_jumlah' => ['required', 'numeric', 'min:0'],
-            'input_tanggal_faktur' => ['required'],
+            'input_tanggal_pesanan' => ['required'],
             'input_harga_satuan' => ['required'],
             'input_diskon_satuan' => ['required'],
         ]);
 
-        $fakturPembelianDetail = FakturPembelianDetail::find($this->input_faktur_pembelian_detail_id);
-        $produk = Produk::find($fakturPembelianDetail->produk_id);
+        $pesananPembelianDetail = PesananPembelianDetail::find($this->input_pesanan_pembelian_detail_id);
+        $produk = Produk::find($pesananPembelianDetail->produk_id);
         $satuan = Satuan::find($this->input_satuan_id);
         $diskon_satuan_type = Const_Umum::DISKON_TYPE_RP;
         $diskon_satuan = $this->input_diskon_satuan ?: 0;
@@ -381,7 +382,7 @@ class Edit extends Component
 
         $this->items[$this->index_edit_item] = [
             'id' => $this->items[$this->index_edit_item]['id'],
-            'faktur_pembelian_detail_id' => $this->input_faktur_pembelian_detail_id,
+            'pesanan_pembelian_detail_id' => $this->input_pesanan_pembelian_detail_id,
             'produk_id' => $produk->id,
             'satuan_id' => $satuan->id,
             'jumlah' => $jumlah,
@@ -389,25 +390,25 @@ class Edit extends Component
             'diskon_satuan' => $diskon_satuan,
             'diskon_satuan_type' => $diskon_satuan_type,
 
-            'faktur_pembelian_id' => $fakturPembelianDetail->header?->id,
-            'faktur_pembelian_kode' => $fakturPembelianDetail->header?->kode,
-            'faktur_pembelian_supplier_kode' => $fakturPembelianDetail->header?->kode_faktur_supplier,
-            'tanggal_faktur' => $this->input_tanggal_faktur,
+            'pesanan_pembelian_id' => $pesananPembelianDetail->header?->id,
+            'pesanan_pembelian_kode' => $pesananPembelianDetail->header?->kode,
+            'pesanan_pembelian_supplier_kode' => $pesananPembelianDetail->header?->kode_pesanan_supplier,
+            'tanggal_pesanan' => $this->input_tanggal_pesanan,
             'produk_nama' => $produk->nama,
             'satuan_nama' => $satuan->nama,
         ];
 
         $this->reset(
-            'input_faktur_pembelian_id',
-            'input_faktur_pembelian_detail_id',
+            'input_pesanan_pembelian_id',
+            'input_pesanan_pembelian_detail_id',
             'input_satuan_id',
             'input_jumlah',
-            'input_tanggal_faktur',
+            'input_tanggal_pesanan',
             'input_harga_satuan',
             'input_diskon_satuan',
             'index_edit_item',
         );
-        $this->updatedInputFakturPembelianId();
+        $this->updatedInputPesananPembelianId();
     }
 
     public function edit($index)
@@ -415,17 +416,17 @@ class Edit extends Component
         $this->index_edit_item = $index;
 
         $item = $this->items[$index];
-        $this->input_faktur_pembelian_id = $item['faktur_pembelian_id'];
-        $this->updatedInputFakturPembelianId();
-        $this->input_faktur_pembelian_detail_id = $item['faktur_pembelian_detail_id'];
-        $this->updatedInputFakturPembelianDetailId();
+        $this->input_pesanan_pembelian_id = $item['pesanan_pembelian_id'];
+        $this->updatedInputPesananPembelianId();
+        $this->input_pesanan_pembelian_detail_id = $item['pesanan_pembelian_detail_id'];
+        $this->updatedInputPesananPembelianDetailId();
         $this->input_satuan_id = $item['satuan_id'];
         $this->input_jumlah = $item['jumlah'];
-        $this->input_tanggal_faktur = $item['tanggal_faktur'];
+        $this->input_tanggal_pesanan = $item['tanggal_pesanan'];
         $this->input_harga_satuan = $item['harga_satuan'];
         $this->input_diskon_satuan = $item['diskon_satuan'];
 
-        $this->dispatch('set_value_dropdown_input_faktur_pembelian_detail_id', $this->input_faktur_pembelian_detail_id);
+        $this->dispatch('set_value_dropdown_input_pesanan_pembelian_detail_id', $this->input_pesanan_pembelian_detail_id);
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);
     }
 

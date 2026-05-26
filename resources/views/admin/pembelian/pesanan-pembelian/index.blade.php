@@ -106,6 +106,25 @@
                                         </li>
                                     @endif
 
+                                    @if ($obj->canPengiriman())
+                                        <li>
+                                            <button class="dropdown-item"
+                                                wire:click="dalamPengiriman('{{ $obj->id }}')">
+                                                <i class="ri-car-line label-icon align-middle fs-16 me-2"></i>
+                                                Update Dalam Pengiriman
+                                            </button>
+                                        </li>
+                                    @endif
+
+                                    @if ($obj->canPengiriman() || $obj->canSelesaikan())
+                                        <li>
+                                            <button class="dropdown-item" wire:click="selesai('{{ $obj->id }}')">
+                                                <i class="ri-check-line label-icon align-middle fs-16 me-2"></i>
+                                                Selesaikan
+                                            </button>
+                                        </li>
+                                    @endif
+
                                     @if ($obj->canPrint())
                                         <li>
                                             <button class="dropdown-item" wire:click="print('{{ $obj->id }}')">

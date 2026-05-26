@@ -26,4 +26,35 @@ class SH_PesananPembelian
 
         return $results;
     }
+
+    public static function selesai($supplier_id, $tanggal = null, $include_ids = [], $is_show_sisa_utang = true)
+    {
+        $objs = PesananPembelian::query()
+            ->with(['details'])
+            ->where('supplier_id', $supplier_id)
+            ->when(count($include_ids) > 0, function ($query) use ($include_ids) {
+                $query->orWhereIn('id', $include_ids);
+            })
+            ->where('status', Const_Status::PESANAN_PEMBELIAN_SELESAI)
+            ->get();
+
+        $results = [];
+        foreach ($objs as $obj) {
+            if ($is_show_sisa_utang) {
+                $results[$obj->id] = sprintf(
+                    '[%s] -- Sisa Utang: Rp. %s',
+                    $obj->kode,
+                    _number($obj->getSisaUtang($tanggal)),
+                );
+            } else {
+                $results[$obj->id] = sprintf(
+                    '[%s] (Rp. %s)',
+                    $obj->kode,
+                    _number($obj->grandtotal),
+                );
+            }
+        }
+
+        return $results;
+    }
 }

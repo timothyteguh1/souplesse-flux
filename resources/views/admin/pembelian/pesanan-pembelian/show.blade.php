@@ -66,18 +66,6 @@
                         </a>
                     </td>
                 </tr>
-                {{-- <tr>
-                    <th>PKP</th>
-                    <td>{{ $obj->is_pkp ? 'Ya' : 'Tidak' }}</td>
-                </tr>
-                <tr>
-                    <th>Include PPN</th>
-                    <td>{{ $obj->is_include_ppn ? 'Ya' : 'Tidak' }}</td>
-                </tr>
-                <tr>
-                    <th>PPN Percent</th>
-                    <td>{{ _number($obj->ppn_percent) }}%</td>
-                </tr> --}}
                 <tr>
                     <th>Keterangan</th>
                     <td>{!! nl2br(e($obj->keterangan)) !!}</td>
@@ -102,7 +90,7 @@
                                 <tr class="bg-light">
                                     <th class="text-center" width="10%">#</th>
                                     <th width="20%">Produk</th>
-                                    <th width="10%">Satuan</th>
+                                    <th width="10%">Model</th>
                                     <th width="10%" class="text-end">Qty</th>
                                     <th width="10%" class="text-end">Harga</th>
                                     <th width="15%" class="text-end" colspan="2">Diskon</th>
@@ -111,7 +99,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($obj->details()->with(['produk', 'satuan'])->get() as $detail)
+                                @foreach ($obj->details()->with(['produk.modelProduk', 'satuan'])->get() as $detail)
                                     <tr>
                                         <td class="text-center">
                                             {{ $loop->iteration }}
@@ -122,9 +110,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="{{ optional($detail->satuan)->getRouteShow() }}">
-                                                {{ optional($detail->satuan)->nama }}
-                                            </a>
+                                            {{ $detail->produk?->modelProduk?->nama }}
                                         </td>
                                         <td class="text-end">
                                             {{ _number($detail->jumlah) }}
@@ -161,19 +147,13 @@
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="8" class="text-end">Beban Lain</th>
-                                    <th class="text-end">
-                                        {{ _number($obj->beban_lain) }}
-                                    </th>
-                                </tr>
-                                <tr>
                                     <th colspan="8" class="text-end">DPP</th>
                                     <th class="text-end">
                                         {{ _number($obj->dpp) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="8" class="text-end">PPN</th>
+                                    <th colspan="8" class="text-end">PPN ({{ _number($obj->ppn_percent) }}%)</th>
                                     <th class="text-end">
                                         {{ _number($obj->ppn) }}
                                     </th>

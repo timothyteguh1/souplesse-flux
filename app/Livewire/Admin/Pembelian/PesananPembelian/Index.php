@@ -75,7 +75,23 @@ class Index extends Component
         $pesananPembelian = PesananPembelian::find($id);
         PesananPembelianService::updateStatusTutup($pesananPembelian);
 
-        session()->flash('flash_success', 'Pesanan Pembelian telah di-Tupup.');
+        session()->flash('flash_success', 'Pesanan Pembelian telah di-Tutup.');
+    }
+
+    public function dalamPengiriman($id)
+    {
+        $pesananPembelian = PesananPembelian::find($id);
+        PesananPembelianService::updateStatusdalamPengiriman($pesananPembelian);
+
+        session()->flash('flash_success', 'Pesanan Pembelian dalam Perjalanan.');
+    }
+
+    public function selesai($id)
+    {
+        $pesananPembelian = PesananPembelian::find($id);
+        PesananPembelianService::updateStatusSelesai($pesananPembelian);
+
+        session()->flash('flash_success', 'Pesanan Pembelian telah selesai.');
     }
 
     public function print($id)

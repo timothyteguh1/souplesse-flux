@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Persediaan\PenambahanPersediaan;
 
+use App\Models\Master\Gudang;
 use Livewire\Component;
 use App\Models\Master\Produk;
 use App\Models\Master\Satuan;
@@ -57,19 +58,7 @@ class Create extends Component
 
         $this->tanggal = _get_default_datetime();
         $this->cabang_id = session()->get('cabang_id');
-    }
-
-    public function updatedGudangId()
-    {
-        $this->items = [];
-
-        $this->reset('input_produk_id', 'input_satuan_id', 'input_jumlah', 'input_harga_satuan');
-
-        $options = SH_Produk::stokGudangWithStok($this->gudang_id, false);
-        $this->dispatch('refresh_dropdown_input_produk_id', [
-            'options' => $options,
-            'value' => null,
-        ]);
+        $this->gudang_id = Gudang::first()->id;
     }
 
     public function updatedInputProdukId()
@@ -88,7 +77,7 @@ class Create extends Component
             return;
         }
 
-        $options = SH_Produk::satuansStokGudang($produk->id, $this->gudang_id);
+        $options = SH_Produk::satuansStokCabang($produk->id);
         $this->dispatch('refresh_dropdown_input_satuan_id', [
             'options' => $options,
             'value' => null,
@@ -96,6 +85,8 @@ class Create extends Component
 
         $this->input_satuan_id = null;
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);
+        $satuanPcs = Satuan::where('nama', 'PCS')->first();
+        $this->input_satuan_id = $satuanPcs->id;
         $this->updatedInputSatuanId();
     }
 
@@ -115,7 +106,7 @@ class Create extends Component
             ->where('satuan_id', $satuan->id)
             ->first();
 
-        $konversi = $produkSatuan->konversi ?? 0;
+        $konversi = $produkSatuan->konversi ?? 1;
         $hppSatuanDasar = InventoryFunction::getHpp($this->cabang_id, $produk->id);
         $hppSatuan = $hppSatuanDasar * $konversi;
         $this->input_harga_satuan = $hppSatuan;

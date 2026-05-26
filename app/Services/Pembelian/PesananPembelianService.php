@@ -83,12 +83,25 @@ class PesananPembelianService
         $obj->save();
     }
 
+    public static function updateStatusDalamPengiriman(PesananPembelian $obj)
+    {
+        $obj->status = Const_Status::PESANAN_PEMBELIAN_DALAM_PENGIRIMAN;
+        $obj->save();
+    }
+
+    public static function updateStatusSelesai(PesananPembelian $obj)
+    {
+        $obj->status = Const_Status::PESANAN_PEMBELIAN_SELESAI;
+        $obj->save();
+        foreach ($obj->details as $detail) {
+            PesananPembelianDetailService::selesai($obj, $detail);
+        }
+    }
+
     public static function updateStatus(PesananPembelian $obj): bool
     {
         if ($obj->is_terpenuhi) {
             $obj->status = Const_Status::PESANAN_PEMBELIAN_SELESAI;
-        } elseif ($obj->fakturPembelianDetails()->count() > 0) {
-            $obj->status = Const_Status::PESANAN_PEMBELIAN_BELUM_SELESAI;
         } else {
             $obj->status = Const_Status::PESANAN_PEMBELIAN_BELUM_DITERIMA;
         }

@@ -59,8 +59,6 @@ class Edit extends Component
         $this->gudang_id = $this->obj->gudang_id;
         $this->keterangan = $this->obj->keterangan;
 
-        $this->updatedGudangId();
-
         $details = $this->obj->details()->with(['produk', 'satuan'])->get();
         $this->items = [];
 
@@ -81,19 +79,6 @@ class Edit extends Component
         }
     }
 
-    public function updatedGudangId()
-    {
-        $this->items = [];
-
-        $this->reset('input_produk_id', 'input_satuan_id', 'input_jumlah', 'input_harga_satuan');
-
-        $options = SH_Produk::stokGudangWithStok($this->gudang_id);
-        $this->dispatch('refresh_dropdown_input_produk_id', [
-            'options' => $options,
-            'value' => null,
-        ]);
-    }
-
     public function updatedInputProdukId()
     {
         $produk = Produk::find($this->input_produk_id);
@@ -110,7 +95,7 @@ class Edit extends Component
             return;
         }
 
-        $options = SH_Produk::satuansStokGudang($produk->id, $this->gudang_id);
+        $options = SH_Produk::satuansStokCabang($produk->id);
         $this->dispatch('refresh_dropdown_input_satuan_id', [
             'options' => $options,
             'value' => null,
@@ -118,6 +103,8 @@ class Edit extends Component
 
         $this->input_satuan_id = null;
         $this->dispatch('set_value_dropdown_input_satuan_id', $this->input_satuan_id);
+        $satuanPcs = Satuan::where('nama', 'PCS')->first();
+        $this->input_satuan_id = $satuanPcs->id;
         $this->updatedInputSatuanId();
     }
 
@@ -145,7 +132,7 @@ class Edit extends Component
             ->where('satuan_id', $satuan->id)
             ->first();
 
-        $konversi = $produkSatuan->konversi ?? 0;
+        $konversi = $produkSatuan->konversi ?? 1;
         $hppSatuanDasar = InventoryFunction::getHpp($this->cabang_id, $produk->id);
         $hppSatuan = $hppSatuanDasar * $konversi;
         $this->input_harga_satuan = $hppSatuan;

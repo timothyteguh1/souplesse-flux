@@ -25,14 +25,6 @@
                         </button>
                     @endif
                 </x-slot>
-                {{-- <tr>
-                    <th width="20%">Cabang</th>
-                    <td>
-                        <a href="{{ $obj->cabang->getRouteShow() }}">
-                            {{ $obj->cabang->nama }}
-                        </a>
-                    </td>
-                </tr> --}}
                 <tr>
                     <th width="20%">Kode</th>
                     <td>{{ $obj->kode }}</td>
@@ -40,14 +32,6 @@
                 <tr>
                     <th>Tanggal</th>
                     <td>{{ $obj->tanggal }}</td>
-                </tr>
-                <tr>
-                    <th>Gudang</th>
-                    <td>
-                        <a href="{{ $obj->gudang->getRouteShow() }}">
-                            {{ $obj->gudang->kode }} - {{ $obj->gudang->nama }}
-                        </a>
-                    </td>
                 </tr>
                 <tr>
                     <th>Keterangan</th>
@@ -72,10 +56,7 @@
                             <thead>
                                 <tr class="bg-light">
                                     <th width="20%" class="text-uppercase">Produk</th>
-                                    <th width="15%" class="text-uppercase">Satuan</th>
-                                    <th width="15%" class="text-uppercase">Expired Date</th>
-                                    <th width="15%" class="text-uppercase">No Batch</th>
-                                    <th width="10%" class="text-uppercase text-end">Qty Kurang</th>
+                                    <th width="10%" class="text-uppercase text-end">Qty Tambah</th>
                                     <th width="10%" class="text-uppercase text-end">DPP</th>
                                     <th width="15%" class="text-uppercase text-end">Subtotal</th>
                                 </tr>
@@ -87,17 +68,6 @@
                                             <a href="{{ $detail->produk->getRouteShow() }}">
                                                 {{ $detail->produk->kode }} - {{ $detail->produk->nama }}
                                             </a>
-                                        </td>
-                                        <td>
-                                            <a href="{{ $detail->satuan->getRouteShow() }}">
-                                                {{ $detail->satuan->kode }} - {{ $detail->satuan->nama }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            {{ $detail->expired_date }}
-                                        </td>
-                                        <td>
-                                            {{ $detail->no_batch }}
                                         </td>
                                         <td class="text-end">
                                             {{ _number($detail->jumlah) }}
@@ -113,7 +83,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th class="text-end" colspan="6">Total Nilai Persediaan yang Bertambah</th>
+                                    <th class="text-end" colspan="3">Total Nilai Persediaan yang Bertambah</th>
                                     <th class="text-end">{{ _number($obj->grandtotal) }}</th>
                                 </tr>
                             </tfoot>

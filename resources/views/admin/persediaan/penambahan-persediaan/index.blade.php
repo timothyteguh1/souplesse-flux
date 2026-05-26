@@ -28,11 +28,7 @@
                         <!--end col-->
 
                         <div class="col-xxl-4 col-sm-6">
-                            <x-admin::input.select2
-                                :name="'status'"
-                                :options="\App\Utilities\SelectHelpers\System\SH_Status::penambahan_persediaan()"
-                                :placeholder="'- Semua Status -'"
-                            />
+                            <x-admin::input.select2 :name="'status'" :options="\App\Utilities\SelectHelpers\System\SH_Status::penambahan_persediaan()" :placeholder="'- Semua Status -'" />
                         </div>
                         <!--end col-->
 
@@ -48,36 +44,14 @@
                     <x-slot name="head">
                         <tr>
                             <th class="text-uppercase" style="width: 45px">No</th>
-                            <x-admin::utils.th-sortable-cabang
-                                :label="'Cabang'"
-                                :field="'cabang_id'"
-                                :sort-field="$sortField"
-                                :sort-asc="$sortAsc"
-                            />
-                            <x-admin::utils.th-sortable
-                                :label="'Kode'"
-                                :field="'kode'"
-                                :sort-field="$sortField"
-                                :sort-asc="$sortAsc"
-                            />
-                            <x-admin::utils.th-sortable
-                                :label="'Tanggal'"
-                                :field="'tanggal'"
-                                :sort-field="$sortField"
-                                :sort-asc="$sortAsc"
-                            />
-                            <x-admin::utils.th-sortable
-                                :label="'Gudang'"
-                                :field="'gudang_id'"
-                                :sort-field="$sortField"
-                                :sort-asc="$sortAsc"
-                            />
-                            <x-admin::utils.th-sortable
-                                :label="'Keterangan'"
-                                :field="'keterangan'"
-                                :sort-field="$sortField"
-                                :sort-asc="$sortAsc"
-                            />
+                            <x-admin::utils.th-sortable-cabang :label="'Cabang'" :field="'cabang_id'" :sort-field="$sortField"
+                                :sort-asc="$sortAsc" />
+                            <x-admin::utils.th-sortable :label="'Kode'" :field="'kode'" :sort-field="$sortField"
+                                :sort-asc="$sortAsc" />
+                            <x-admin::utils.th-sortable :label="'Tanggal'" :field="'tanggal'" :sort-field="$sortField"
+                                :sort-asc="$sortAsc" />
+                            <x-admin::utils.th-sortable :label="'Keterangan'" :field="'keterangan'" :sort-field="$sortField"
+                                :sort-asc="$sortAsc" />
                             <th class="text-uppercase text-end">Grand Total</th>
                             <th class="text-uppercase text-center" style="width: 80px">Action</th>
                         </tr>
@@ -89,9 +63,6 @@
                             <x-admin::includes.pages.browse-table-td-cabang :obj="$obj" />
                             <td><a href="{{ $obj->getRouteShow() }}">{{ $obj->kode }}</a></td>
                             <td>{{ _date_format_output($obj->tanggal) }}</td>
-                            <td>
-                                <a href="{{ $obj->gudang->getRouteShow() }}">{{ $obj->gudang->nama }}</a>
-                            </td>
                             <td>{{ $obj->keterangan }}</td>
                             <td class="text-end">{{ _number($obj->grandtotal) }}</td>
                             <td class="text-center">

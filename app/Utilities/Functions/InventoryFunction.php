@@ -227,7 +227,7 @@ class InventoryFunction
             ->where('satuan_id', $satuan_id)
             ->first();
 
-        $konversi = $produkSatuan?->konversi ?? 0;
+        $konversi = $produkSatuan?->konversi ?? 1;
         $jumlah = $konversi == 0 ? 0 : floor($total_satuan_dasar / $konversi);
 
         return $jumlah;

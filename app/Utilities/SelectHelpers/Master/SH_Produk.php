@@ -224,7 +224,7 @@ class SH_Produk
         $produk = Produk::findOrFail($produk_id);
 
         $results = [];
-        foreach ($produk->produkSatuans()->with(['satuan'])->get() as $produkSatuan) {
+        foreach ($produk->with(['satuan'])->get() as $produkSatuan) {
             $stok = InventoryFunction::getStok($cabang_id, $produk_id, $gudang_id);
 
             if (!$showTersedia) {

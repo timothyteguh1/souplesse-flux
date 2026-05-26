@@ -38,15 +38,17 @@ class Create extends Component
     public $input_satuan_id;
     public $input_jumlah;
     public $input_harga_satuan;
-    public $input_diskon_satuan_type = Const_Umum::DISKON_TYPE_RP;
+    public $input_diskon_satuan_type = Const_Umum::DISKON_TYPE_PERCENT;
     public $input_diskon_satuan;
     public $input_keterangan;
     public $index_edit_item = null;
     public $total = 0;
     public $total_dpp = 0;
     public $total_ppn = 0;
-    public $diskon_type = Const_Umum::DISKON_TYPE_RP;
+    public $diskon_type = Const_Umum::DISKON_TYPE_PERCENT;
     public $diskon = 0;
+    public $pembulatan_rupiah = 0;
+    public $total_setelah_pembulatan = 0;
     public $grandtotal = 0;
 
     protected function rules(): array
@@ -72,6 +74,7 @@ class Create extends Component
 
             'diskon_type' => ['required'],
             'diskon' => ['required'],
+            // 'pembulatan_rupiah' => ['required'],
         ];
     }
 
@@ -82,6 +85,12 @@ class Create extends Component
         $this->tanggal = _get_default_datetime();
         $this->cabang_id = session()->get('cabang_id');
         $this->ppn_percent = Setting::fetch(Const_Setting::PPN_PERCENT) ?? 0;
+
+        $countSupplier = Supplier::count();
+        if ($countSupplier == 1) {
+            $this->supplier_id = Supplier::first()?->id;
+            $this->updatedSupplierId();
+        }
     }
 
     public function updatedSupplierId()
@@ -90,12 +99,12 @@ class Create extends Component
         $this->reset('alamat', 'kota', 'kode_pos', 'provinsi', 'is_pkp', 'is_include_ppn', 'input_produk_id');
 
         if ($supplier) {
-            $this->alamat = optional($supplier)->alamat;
-            $this->kota = optional($supplier)->kota;
-            $this->kode_pos = optional($supplier)->kode_pos;
-            $this->provinsi = optional($supplier)->provinsi;
-            $this->is_pkp = optional($supplier)->is_pkp;
-            $this->is_include_ppn = optional($supplier)->is_include_ppn;
+            $this->alamat = $supplier?->alamat;
+            $this->kota = $supplier?->kota;
+            $this->kode_pos = $supplier?->kode_pos;
+            $this->provinsi = $supplier?->provinsi;
+            $this->is_pkp = $supplier?->is_pkp;
+            $this->is_include_ppn = $supplier?->is_include_ppn;
 
             $options = SH_Produk::stokCabangWithStok(false);
             $this->dispatch('refresh_dropdown_input_produk_id', [
@@ -277,6 +286,7 @@ class Create extends Component
             'produk_nama' => $produk->nama,
             'satuan_id' => $satuan->id,
             'satuan_nama' => $satuan->nama,
+            'model_produk_nama' => $produk->modelProduk?->nama,
             'jumlah' => $jumlah,
             'harga_satuan' => $harga_satuan,
             'diskon_satuan' => $diskon_satuan,
@@ -318,6 +328,7 @@ class Create extends Component
             'produk_nama' => $produk->nama,
             'satuan_id' => $satuan->id,
             'satuan_nama' => $satuan->nama,
+            'model_produk_nama' => $produk->modelProduk?->nama,
             'jumlah' => $jumlah,
             'harga_satuan' => $harga_satuan,
             'diskon_satuan' => $diskon_satuan,
@@ -351,7 +362,7 @@ class Create extends Component
         $this->input_satuan_id = $item['satuan_id'];
         $this->input_jumlah = $item['jumlah'];
         $this->input_harga_satuan = $item['harga_satuan'];
-        $this->input_diskon_satuan_type = $item['diskon_satuan_type'] ?: Const_Umum::DISKON_TYPE_RP;
+        $this->input_diskon_satuan_type = $item['diskon_satuan_type'] ?: Const_Umum::DISKON_TYPE_PERCENT;
         $this->input_diskon_satuan = $item['diskon_satuan'];
         $this->input_keterangan = $item['keterangan'];
 

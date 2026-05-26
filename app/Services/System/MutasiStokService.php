@@ -39,24 +39,15 @@ class MutasiStokService
         if ($jumlah_transaksi <= 0) {
             throw new GeneralException('Jumlah mutasi stok harus lebih besar dari 0.');
         }
-        if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
+        // if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
+        //     throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
+        // }
 
         $tanggal = _datetime_carbon_db($tanggal);
 
-        // dalam satuan terkecil
-        $produkSatuan = ProdukSatuan::query()
-            ->where('produk_id', $produk_id)
-            ->where('satuan_id', $satuan_transaksi_id)
-            ->first();
 
-        if (!$produkSatuan) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
-
-        $satuan_id = $produk->produkSatuan->satuan_id;
-        $konversi = $produkSatuan->konversi;
+        $satuan_id = $produk->satuan_id;
+        $konversi = 1;
         $jumlah = $konversi * $jumlah_transaksi;
         $harga = $konversi == 0 ? 0 : _round($harga_transaksi / $konversi);
 
@@ -112,24 +103,14 @@ class MutasiStokService
             throw new GeneralException('Jumlah mutasi stok harus lebih kecil dari 0.');
         }
 
-        if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
+        // if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
+        //     throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
+        // }
 
         $tanggal = _datetime_carbon_db($tanggal);
 
-        // dalam satuan terkecil
-        $produkSatuan = ProdukSatuan::query()
-            ->where('produk_id', $produk_id)
-            ->where('satuan_id', $satuan_transaksi_id)
-            ->first();
-
-        if (!$produkSatuan) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
-
-        $satuan_id = $produk->produkSatuan->satuan_id;
-        $konversi = $produkSatuan->konversi;
+        $satuan_id = $produk->satuan_id;
+        $konversi = 1;
         $jumlah = $konversi * $jumlah_transaksi;
         if ($harga_transaksi == null) {
             $harga = InventoryFunction::getHpp($cabang_id, $produk_id, $tanggal);
@@ -201,24 +182,14 @@ class MutasiStokService
             throw new GeneralException('Jumlah mutasi stok harus lebih kecil dari 0.');
         }
 
-        if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
+        // if (!in_array($satuan_transaksi_id, $produk->satuans->pluck('id')->all())) {
+        //     throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
+        // }
 
         $tanggal = _datetime_carbon_db($tanggal);
 
-        // dalam satuan terkecil
-        $produkSatuan = ProdukSatuan::query()
-            ->where('produk_id', $produk_id)
-            ->where('satuan_id', $satuan_transaksi_id)
-            ->first();
-
-        if (!$produkSatuan) {
-            throw new GeneralException('Satuan mutasi stok tidak terdaftar disatuan produk.');
-        }
-
-        $satuan_id = $produk->produkSatuan->satuan_id;
-        $konversi = $produkSatuan->konversi;
+        $satuan_id = $produk->satuan_id;
+        $konversi = 1;
         $jumlah = $konversi * $jumlah_transaksi;
         $harga = InventoryFunction::getHpp($cabang_id, $produk_id, $tanggal);
         $harga_transaksi = _round($harga * $konversi);

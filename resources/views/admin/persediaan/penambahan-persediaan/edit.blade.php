@@ -34,22 +34,6 @@
 
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label">
-                                        Gudang
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.select2id
-                                            :id="'gudang_id'"
-                                            :name="'gudang_id'"
-                                            :defer="false"
-                                            :options="\App\Utilities\SelectHelpers\Master\SH_Gudang::user()"
-                                            placeholder="- Pilih Gudang -"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label">
                                         Keterangan
                                         <span class="text-danger">*</span>
                                     </label>
@@ -65,33 +49,8 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-6 col-12">
-                                    <x-admin::input.select2id
-                                        :id="'input_produk_id'"
-                                        :name="'input_produk_id'"
-                                        :options="
-                                            \App\Utilities\SelectHelpers\Master\SH_Produk::stokGudangWithStok(
-                                                $gudang_id,
-                                                false,
-                                            )
-                                        "
-                                        :defer="false"
-                                        placeholder="Produk"
-                                    />
-                                </div>
-                                <div class="col-md-3 col-12">
-                                    <x-admin::input.select2id
-                                        :id="'input_satuan_id'"
-                                        :name="'input_satuan_id'"
-                                        :options="[]"
-                                        :defer="false"
-                                        placeholder="Satuan"
-                                    />
-                                </div>
-                                <div class="col-md-3 col-12">
-                                    <x-admin::input.date :name="'input_expired_date'" placeholder="Expired Date" />
-                                </div>
-                                <div class="col-md-3 col-12">
-                                    <x-admin::input.text :name="'input_no_batch'" placeholder="No Batch" />
+                                    <x-admin::input.select2id :id="'input_produk_id'" :name="'input_produk_id'" :options="\App\Utilities\SelectHelpers\Master\SH_Produk::stokCabangWithStok(false)"
+                                        :defer="false" placeholder="Produk" />
                                 </div>
                                 <div class="col-md-3 col-12">
                                     <x-admin::input.number :name="'input_jumlah'" placeholder="Qty Tambah" />
@@ -101,7 +60,7 @@
                                     <x-admin::input.number :name="'input_harga_satuan'" placeholder="DPP" />
                                 </div>
 
-                                <div class="col-md-3 col-12">
+                                <div class="col-12">
                                     @if ($index_edit_item === null)
                                         <x-admin::buttons.create-add-item :action="'addItem'" />
                                     @else
@@ -117,9 +76,6 @@
                                     <tr>
                                         <th width="15%" class="text-uppercase">Kode</th>
                                         <th width="20%" class="text-uppercase">Nama</th>
-                                        <th width="15%" class="text-uppercase">Satuan</th>
-                                        <th width="10%" class="text-uppercase">Expired Date</th>
-                                        <th width="10%" class="text-uppercase">No Batch</th>
                                         <th width="10%" class="text-uppercase text-end">Qty Tambah</th>
                                         <th width="15%" class="text-uppercase text-end">DPP</th>
                                         <th width="15%" class="text-uppercase text-end">Subtotal</th>
@@ -135,15 +91,6 @@
                                             <td>
                                                 {{ $item['nama'] }}
                                             </td>
-                                            <td>
-                                                {{ $item['satuan_nama'] }}
-                                            </td>
-                                            <td>
-                                                {{ $item['expired_date'] }}
-                                            </td>
-                                            <td>
-                                                {{ $item['no_batch'] }}
-                                            </td>
                                             <td class="text-end">
                                                 {{ _number($item['jumlah']) }}
                                             </td>
@@ -154,19 +101,13 @@
                                                 {{ _number($item['subtotal']) }}
                                             </td>
                                             <td class="text-end">
-                                                <button
-                                                    type="button"
-                                                    wire:click="edit({{ $loop->index }})"
-                                                    class="btn btn-sm btn-warning btn-icon waves-effect waves-light me-2"
-                                                >
+                                                <button type="button" wire:click="edit({{ $loop->index }})"
+                                                    class="btn btn-sm btn-warning btn-icon waves-effect waves-light me-2">
                                                     <i class="ri-pencil-fill"></i>
                                                 </button>
 
-                                                <button
-                                                    type="button"
-                                                    wire:click="removeItem({{ $loop->index }})"
-                                                    class="btn btn-sm btn-danger btn-icon waves-effect waves-light"
-                                                >
+                                                <button type="button" wire:click="removeItem({{ $loop->index }})"
+                                                    class="btn btn-sm btn-danger btn-icon waves-effect waves-light">
                                                     <i class="ri-delete-bin-5-line"></i>
                                                 </button>
                                             </td>
@@ -175,7 +116,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="7" class="text-end">Total Nilai Persediaan yang Bertambah</th>
+                                        <th colspan="4" class="text-end">Total Nilai Persediaan yang Bertambah</th>
                                         <th class="text-end">{{ _number(collect($items)->sum('subtotal')) }}</th>
                                         <td></td>
                                     </tr>
@@ -185,21 +126,13 @@
                     </div>
 
                     <div class="card-footer text-end">
-                        <span
-                            class="btn btn-primary btn-load waves-effect waves-light"
-                            role="button"
-                            tabindex="0"
-                            wire:click="submitDefault"
-                            wire:keydown.enter="submitDefault"
-                        >
+                        <span class="btn btn-primary btn-load waves-effect waves-light" role="button" tabindex="0"
+                            wire:click="submitDefault" wire:keydown.enter="submitDefault">
                             <i class="ri-pencil-line align-bottom me-1"></i>
                             Simpan
-                            <span
-                                class="spinner-border flex-shrink-0 ms-1 align-bottom"
-                                role="status"
+                            <span class="spinner-border flex-shrink-0 ms-1 align-bottom" role="status"
                                 wire:loading.delay
-                                wire:target="submitDefault,submitAndCreate,submitAndShow,submitAndBackToIndex"
-                            ></span>
+                                wire:target="submitDefault,submitAndCreate,submitAndShow,submitAndBackToIndex"></span>
                         </span>
                     </div>
                 </div>

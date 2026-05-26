@@ -33,6 +33,7 @@ class PesananPembelian extends Model
         'is_pkp',
         'is_include_ppn',
         'ppn_percent',
+        'pembulatan_rupiah',
         'diskon_type',
         'diskon',
         'beban_lain',
@@ -194,6 +195,27 @@ class PesananPembelian extends Model
     {
         if (auth()->user()) {
             return auth()->user()->can($this->getPermissionDelete()) && $this->canEdit();
+        }
+        return true;
+    }
+
+    public function canPengiriman(): bool
+    {
+        if (auth()->user()) {
+            return auth()->user()->can($this->getPermissionDelete())
+                && $this->status != Const_Status::PESANAN_PEMBELIAN_MENUNGGU_PERSETUJUAN
+                && $this->status != Const_Status::PESANAN_PEMBELIAN_DALAM_PENGIRIMAN
+                && $this->status != Const_Status::PESANAN_PEMBELIAN_SELESAI;
+        }
+        return true;
+    }
+
+    public function canSelesaikan(): bool
+    {
+        if (auth()->user()) {
+            return auth()->user()->can($this->getPermissionDelete())
+                && $this->status != Const_Status::PESANAN_PEMBELIAN_MENUNGGU_PERSETUJUAN
+                && $this->status != Const_Status::PESANAN_PEMBELIAN_SELESAI;
         }
         return true;
     }
