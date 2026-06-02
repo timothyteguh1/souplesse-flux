@@ -93,7 +93,7 @@
                                     <th width="10%">Model</th>
                                     <th width="10%" class="text-end">Qty</th>
                                     <th width="10%" class="text-end">Harga</th>
-                                    <th width="15%" class="text-end" colspan="2">Diskon</th>
+                                    <th width="15%" class="text-center" colspan="2">Diskon per Qty</th>
                                     <th width="15%" class="text-end">Subtotal</th>
                                     <th width="10%" class="text-end">Note</th>
                                 </tr>

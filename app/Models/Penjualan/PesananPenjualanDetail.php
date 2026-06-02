@@ -18,28 +18,18 @@ class PesananPenjualanDetail extends Model
     use HasMutasiStok;
 
     protected $fillable = [
+        'id',
         'pesanan_penjualan_id',
         'produk_id',
         'satuan_id',
         'jumlah',
         'harga_satuan',
-        'diskon_satuan_type_1',
-        'diskon_satuan_1',
-        'diskon_satuan_type_2',
-        'diskon_satuan_2',
-        'diskon_satuan_type_3',
-        'diskon_satuan_3',
-        'diskon_satuan_type_4',
-        'diskon_satuan_4',
+        'diskon_satuan_type',
+        'diskon_satuan',
         'keterangan',
     ];
 
     // region Relationships
-    public function suratJalanDetails(): HasMany
-    {
-        return $this->hasMany(SuratJalanDetail::class);
-    }
-
     public function header(): BelongsTo
     {
         return $this->pesananPenjualan();
@@ -63,6 +53,11 @@ class PesananPenjualanDetail extends Model
     public function satuan(): BelongsTo
     {
         return $this->belongsTo(Satuan::class);
+    }
+
+    public function suratJalanDetails(): HasMany
+    {
+        return $this->hasMany(SuratJalanDetail::class);
     }
     // endregion
 
@@ -135,85 +130,17 @@ class PesananPenjualanDetail extends Model
         );
     }
 
-    public function diskon(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                $diskon_satuan_persen_1 = 0;
-                $diskon_satuan_rupiah_1 = 0;
-
-                if ($this->diskon_satuan_1 > 0) {
-                    if ($this->diskon_satuan_type_1 == Const_Umum::DISKON_TYPE_RP) {
-                        $diskon_satuan_rupiah_1 = $this->diskon_satuan_1;
-                        $diskon_satuan_persen_1 = $this->harga_satuan != 0 ? $diskon_satuan_rupiah_1 * 100 / $this->harga_satuan : 0;
-                    }
-                    if ($this->diskon_satuan_type_1 == Const_Umum::DISKON_TYPE_PERCENT) {
-                        $diskon_satuan_persen_1 = $this->diskon_satuan_1;
-                        $diskon_satuan_rupiah_1 = $this->harga_satuan * $diskon_satuan_persen_1 / 100;
-                    }
-                }
-
-                $harga_setelah_diskon_1 = $this->harga_satuan - $diskon_satuan_rupiah_1;
-                $diskon_satuan_persen_2 = 0;
-                $diskon_satuan_rupiah_2 = 0;
-
-                if ($this->diskon_satuan_2 > 0) {
-                    if ($this->diskon_satuan_type_2 == Const_Umum::DISKON_TYPE_RP) {
-                        $diskon_satuan_rupiah_2 = $this->diskon_satuan_2;
-                        $diskon_satuan_persen_2 = $harga_setelah_diskon_1 != 0 ? $diskon_satuan_rupiah_2 * 100 / $harga_setelah_diskon_1 : 0;
-                    }
-                    if ($this->diskon_satuan_type_2 == Const_Umum::DISKON_TYPE_PERCENT) {
-                        $diskon_satuan_persen_2 = $this->diskon_satuan_2;
-                        $diskon_satuan_rupiah_2 = $harga_setelah_diskon_1 * $diskon_satuan_persen_2 / 100;
-                    }
-                }
-                $harga_setelah_diskon_2 = $harga_setelah_diskon_1 - $diskon_satuan_rupiah_2;
-                $diskon_satuan_persen_3 = 0;
-                $diskon_satuan_rupiah_3 = 0;
-
-                if ($this->diskon_satuan_3 > 0) {
-                    if ($this->diskon_satuan_type_3 == Const_Umum::DISKON_TYPE_RP) {
-                        $diskon_satuan_rupiah_3 = $this->diskon_satuan_3;
-                        $diskon_satuan_persen_3 = $harga_setelah_diskon_2 != 0 ? $diskon_satuan_rupiah_3 * 100 / $harga_setelah_diskon_2 : 0;
-                    }
-                    if ($this->diskon_satuan_type_3 == Const_Umum::DISKON_TYPE_PERCENT) {
-                        $diskon_satuan_persen_3 = $this->diskon_satuan_3;
-                        $diskon_satuan_rupiah_3 = $harga_setelah_diskon_2 * $diskon_satuan_persen_3 / 100;
-                    }
-                }
-
-                $harga_setelah_diskon_3 = $harga_setelah_diskon_2 - $diskon_satuan_rupiah_3;
-                $diskon_satuan_persen_4 = 0;
-                $diskon_satuan_rupiah_4 = 0;
-
-                if ($this->diskon_satuan_4 > 0) {
-                    if ($this->diskon_satuan_type_4 == Const_Umum::DISKON_TYPE_RP) {
-                        $diskon_satuan_rupiah_4 = $this->diskon_satuan_4;
-                        $diskon_satuan_persen_4 = $harga_setelah_diskon_3 != 0 ? $diskon_satuan_rupiah_4 * 100 / $harga_setelah_diskon_3 : 0;
-                    }
-                    if ($this->diskon_satuan_type_4 == Const_Umum::DISKON_TYPE_PERCENT) {
-                        $diskon_satuan_persen_4 = $this->diskon_satuan_4;
-                        $diskon_satuan_rupiah_4 = $harga_setelah_diskon_3 * $diskon_satuan_persen_4 / 100;
-                    }
-                }
-                $harga_net_satuan = $harga_setelah_diskon_3 - $diskon_satuan_rupiah_4;
-
-                $diskon_satuan_rupiah = ($this->harga_satuan - $harga_net_satuan);
-                $diskon_satuan_persen = $this->harga_satuan == 0 ? 0 : ($diskon_satuan_rupiah * 100) / $this->harga_satuan;
-
-                return [
-                    'diskon_satuan_rupiah' => _round($diskon_satuan_rupiah),
-                    'diskon_satuan_persen' => _round($diskon_satuan_persen),
-                ];
-            },
-        );
-    }
-
     public function diskonSatuanPersen(): Attribute
     {
         return Attribute::make(
             get: function () {
-                return $this->diskon['diskon_satuan_persen'];
+                if ($this->diskon_satuan_type == Const_Umum::DISKON_TYPE_PERCENT) {
+                    $diskonSatuanPersen = $this->diskon_satuan;
+                } else {
+                    $diskonSatuanPersen = $this->harga_satuan == 0 ? 0 : $this->diskon_satuan * 100 / $this->harga_satuan;
+                }
+
+                return _round($diskonSatuanPersen);
             },
         );
     }
@@ -222,7 +149,13 @@ class PesananPenjualanDetail extends Model
     {
         return Attribute::make(
             get: function () {
-                return $this->diskon['diskon_satuan_rupiah'];
+                if ($this->diskon_satuan_type == Const_Umum::DISKON_TYPE_RP) {
+                    $diskonSatuanRupiah = $this->diskon_satuan;
+                } else {
+                    $diskonSatuanRupiah = $this->diskon_satuan * $this->harga_satuan / 100;
+                }
+
+                return _round($diskonSatuanRupiah);
             },
         );
     }
@@ -254,21 +187,21 @@ class PesananPenjualanDetail extends Model
         return Attribute::make(
             get: function () {
                 $this->loadMissing('header');
-                $diskonSatuanFooter = ($this->subtotal * $this->header->diskon_rupiah / $this->header->total) / $this->jumlah;
+                $diskonSatuanFooter = $this->dpp_satuan / $this->header->dpp * $this->header->diskon_rupiah;
 
                 return _round($diskonSatuanFooter);
             },
         );
     }
 
-    public function bebanSatuanFooter(): Attribute
+    public function biayaSatuanFooter(): Attribute
     {
         return Attribute::make(
             get: function () {
                 $this->loadMissing('header');
-                $bebanSatuanFooter = ($this->subtotal * $this->header->beban_lain / $this->header->total) / $this->jumlah;
+                $biayaSatuanFooter = $this->dpp_satuan / $this->header->dpp * $this->header->biaya_lain;
 
-                return _round($bebanSatuanFooter);
+                return _round($biayaSatuanFooter);
             },
         );
     }
@@ -277,7 +210,7 @@ class PesananPenjualanDetail extends Model
     {
         return Attribute::make(
             get: function () {
-                $hargaNetSatuanAkhir = $this->harga_net_satuan - $this->diskon_satuan_footer + $this->beban_satuan_footer;
+                $hargaNetSatuanAkhir = $this->harga_net_satuan - $this->diskon_satuan_footer + $this->biaya_satuan_footer;
 
                 return _round($hargaNetSatuanAkhir);
             },

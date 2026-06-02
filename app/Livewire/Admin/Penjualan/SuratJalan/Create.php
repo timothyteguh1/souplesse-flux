@@ -2,15 +2,18 @@
 
 namespace App\Livewire\Admin\Penjualan\SuratJalan;
 
-use Livewire\Component;
-use Livewire\Attributes\Computed;
-use App\Models\Penjualan\SuratJalan;
-use App\Traits\Livewire\WithCreateForm;
+use App\Models\Master\Gudang;
 use App\Models\Penjualan\PesananPenjualan;
+use App\Models\Penjualan\SuratJalan;
 use App\Services\Penjualan\SuratJalanService;
+use App\Traits\Livewire\WithCreateForm;
 use App\Utilities\Constants\Const_JenisTransaksi;
 use App\Utilities\SelectHelpers\Master\SH_Gudang;
 use App\Utilities\SelectHelpers\Transaksi\Penjualan\SH_PesananPenjualan;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+use App\Models\Master\Karyawan;
+use App\Utilities\SelectHelpers\Master\SH_Karyawan;
 
 class Create extends Component
 {
@@ -23,10 +26,12 @@ class Create extends Component
     public $kode;
     public $tanggal;
     public $pesanan_penjualan_id;
+    public $karyawan_id;
     public $customer_id;
     public $customer_nama;
     public $gudang_id;
     public $no_polisi;
+    public $biaya;
     public $keterangan;
     public $items = [];
     public $input_produk_nama;
@@ -43,8 +48,10 @@ class Create extends Component
             'tanggal' => ['required'],
             'pesanan_penjualan_id' => ['required'],
             'customer_id' => ['required'],
+            'karyawan_id' => ['required'],
             'gudang_id' => ['required'],
             'no_polisi' => ['required'],
+            'biaya' => [],
             'keterangan' => [],
 
             'items' => ['required', 'array'],
@@ -61,12 +68,20 @@ class Create extends Component
 
         $this->tanggal = _get_default_datetime();
         $this->cabang_id = session()->get('cabang_id');
+
+        $this->gudang_id = Gudang::first()->id;
+    }
+
+    #[Computed(persist: true)]
+    public function optionsKaryawanId()
+    {
+        return SH_Karyawan::active();
     }
 
     #[Computed(persist: true)]
     public function optionsPesananPenjualanId()
     {
-        return SH_PesananPenjualan::belumDikirim();
+        return SH_PesananPenjualan::belumDifakturkan();
     }
 
     #[Computed(persist: true)]

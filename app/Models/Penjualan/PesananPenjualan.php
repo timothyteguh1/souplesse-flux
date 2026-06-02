@@ -2,20 +2,20 @@
 
 namespace App\Models\Penjualan;
 
-use App\Models\Activity;
-use App\Traits\HasCabang;
 use App\Casts\AsDateTimeCast;
-use App\Traits\HasAutoNumber;
-use App\Traits\HasCoreFeature;
 use App\Models\Master\Customer;
-use App\Utilities\Constants\Const_Umum;
-use Illuminate\Database\Eloquent\Model;
-use App\Utilities\Constants\Const_Status;
+use App\Models\Master\Karyawan;
+use App\Traits\HasAutoNumber;
+use App\Traits\HasCabang;
+use App\Traits\HasCoreFeature;
 use App\Traits\HasMutasiTransaksiAsReference;
+use App\Utilities\Constants\Const_Status;
+use App\Utilities\Constants\Const_Umum;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
 
 class PesananPenjualan extends Model
 {
@@ -28,28 +28,27 @@ class PesananPenjualan extends Model
     protected $route_prefix = 'admin.penjualan.pesanan-penjualan';
     protected $permission_prefix = 'admin.penjualan.pesanan-penjualan';
     protected $fillable = [
+        'id',
         'cabang_id',
-        'kode',
         'jenis_transaksi',
+        'kode',
         'tanggal',
         'customer_id',
+        'karyawan_id',
         'is_pkp',
         'is_include_ppn',
         'ppn_percent',
         'diskon_type',
         'diskon',
-        'batal_alasan',
-        'batal_user_id',
-        'batal_at',
+        'biaya_lain',
         'keterangan',
         'status',
     ];
     protected $attributes = [
-        'status' => Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI,
+        'status' => Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN,
     ];
     protected $casts = [
         'tanggal' => AsDateTimeCast::class,
-        'batal_at' => AsDateTimeCast::class,
     ];
 
     public function autoNumberPrefix(array $data = [])
@@ -69,9 +68,9 @@ class PesananPenjualan extends Model
         return $this->hasMany(PesananPenjualanDetail::class, 'pesanan_penjualan_id');
     }
 
-    public function pesananPenjualanBebans(): HasMany
+    public function karyawan(): BelongsTo
     {
-        return $this->hasMany(PesananPenjualanBeban::class, 'pesanan_penjualan_id');
+        return $this->belongsTo(Karyawan::class);
     }
 
     public function customer(): BelongsTo
@@ -83,26 +82,6 @@ class PesananPenjualan extends Model
     {
         return $this->hasMany(FakturPenjualanDetail::class);
     }
-
-    public function suratJalan(): HasOne
-    {
-        return $this->hasOne(SuratJalan::class);
-    }
-
-    public function activities()
-    {
-        return $this->morphMany(Activity::class, 'subject');
-    }
-
-    public function latestActivity()
-    {
-        return $this->morphOne(Activity::class, 'subject')->latestOfMany();
-    }
-    public function createdBy()
-    {
-        return $this->morphOne(Activity::class, 'subject')
-            ->where('event', 'created');
-    }
     // endregion
 
     // region Accessors
@@ -111,7 +90,7 @@ class PesananPenjualan extends Model
         return Attribute::make(
             get: function () {
                 $this->loadMissing('details');
-                return $this->details->every(fn($detail) => $detail->is_terpenuhi);
+                return $this->details->every(fn($detail) => $detail->is_terpenuhi_faktur);
             },
         );
     }
@@ -161,22 +140,6 @@ class PesananPenjualan extends Model
         );
     }
 
-    public function totalBeban(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                $total = 0;
-                $this->loadMissing('pesananPenjualanBebans');
-
-                foreach ($this->pesananPenjualanBebans as $detail) {
-                    $total += $detail->jumlah;
-                }
-
-                return _round($total);
-            },
-        );
-    }
-
     public function ppn(): Attribute
     {
         return Attribute::make(
@@ -209,7 +172,7 @@ class PesananPenjualan extends Model
     {
         return Attribute::make(
             get: function () {
-                $grandtotal = $this->dpp + $this->ppn + $this->totalBeban;
+                $grandtotal = $this->dpp + $this->ppn;
 
                 return _round($grandtotal);
             },
@@ -226,17 +189,17 @@ class PesananPenjualan extends Model
     public function canEdit(): bool
     {
         if (auth()->user()) {
-            return auth()->user()->can($this->getPermissionEdit()) && $this->status == Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI;
+            return auth()->user()->can($this->getPermissionEdit()) && $this->status == Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN;
         }
-        return $this->status == Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI;
+        return $this->status == Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN;
     }
 
     public function canDelete(): bool
     {
         if (auth()->user()) {
-            return auth()->user()->can($this->getPermissionDelete()) && $this->status == Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI;
+            return auth()->user()->can($this->getPermissionDelete()) && $this->status == Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN;
         }
-        return $this->status == Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI;
+        return $this->status == Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN;
     }
 
     public function canKonfirmasi(): bool
@@ -244,6 +207,23 @@ class PesananPenjualan extends Model
         if (auth()->user()) {
             return auth()->user()->can($this->getPermissionDelete()) && $this->canEdit();
         }
+        return true;
+    }
+
+    public function canBatalKonfirmasi(): bool
+    {
+        if ($this->fakturPenjualanDetails()->count() > 0) {
+            return false;
+        }
+
+        if (!in_array($this->status, [Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI, Const_Status::PESANAN_PENJUALAN_DITOLAK])) {
+            return false;
+        }
+
+        if (auth()->user()) {
+            return auth()->user()->can($this->getPermissionDelete());
+        }
+
         return true;
     }
     // endregion

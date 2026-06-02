@@ -41,7 +41,7 @@ class Index extends Component
     private function getQuery()
     {
         return PesananPenjualan::query()
-            ->with(['customer', 'cabang', 'latestActivity.causer', 'createdBy.causer'])
+            ->with(['customer', 'cabang', 'karyawan'])
             ->whereIn('cabang_id', $this->cabang_ids)
             ->keywordSearch($this->keyword, ['kode', 'keterangan'])
             ->when($this->tanggal, function ($query) {

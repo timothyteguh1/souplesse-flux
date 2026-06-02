@@ -63,6 +63,7 @@ class Const_Status
     public const PESANAN_PENJUALAN_BELUM_DIKIRIM = 'Belum Dikirim';
     public const PESANAN_PENJUALAN_BELUM_SELESAI = 'Belum Selesai';
     public const PESANAN_PENJUALAN_SELESAI = 'Selesai';
+    public const PESANAN_PENJUALAN_DITUTUP = 'Ditutup';
     public const PESANAN_PENJUALAN_BATAL = 'Batal';
 
     public const SURAT_JALAN_BELUM_SELESAI = 'Belum Selesai';

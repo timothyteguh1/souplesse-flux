@@ -180,7 +180,7 @@ class Create extends Component
             $this->kode_pos = optional($customer)->kode_pos;
             $this->provinsi = optional($customer)->provinsi;
 
-            $suratJalanDetail = $suratJalan->details()->with(['produk', 'satuan', 'pesananPenjualanDetail'])->get();
+            $suratJalanDetail = $suratJalan->details()->with(['produk.modelProduk', 'satuan', 'pesananPenjualanDetail'])->get();
 
             foreach ($suratJalanDetail as $detail) {
                 $produk = $detail->produk;
@@ -194,16 +194,12 @@ class Create extends Component
                     'produk_nama' => $produk->nama,
                     'satuan_id' => $satuan->id,
                     'satuan_nama' => $satuan->nama,
+                    'model_produk_nama' => $produk->modelProduk?->nama,
                     'jumlah' => $detail->jumlah,
                     'harga_satuan' => $pesananPenjualanDetail->harga_satuan,
-                    'diskon_satuan_1' => $pesananPenjualanDetail->diskon_satuan_1,
-                    'diskon_satuan_type_1' => $pesananPenjualanDetail->diskon_satuan_type_1,
-                    'diskon_satuan_2' => $pesananPenjualanDetail->diskon_satuan_2,
-                    'diskon_satuan_type_2' => $pesananPenjualanDetail->diskon_satuan_type_2,
-                    'diskon_satuan_3' => $pesananPenjualanDetail->diskon_satuan_3,
-                    'diskon_satuan_type_3' => $pesananPenjualanDetail->diskon_satuan_type_3,
-                    'diskon_satuan_4' => $pesananPenjualanDetail->diskon_satuan_4,
-                    'diskon_satuan_type_4' => $pesananPenjualanDetail->diskon_satuan_type_4,
+                    'diskon_satuan' => $pesananPenjualanDetail->diskon_satuan,
+                    'diskon_satuan_type' => $pesananPenjualanDetail->diskon_satuan_type,
+                    'keterangan' => $pesananPenjualanDetail->keterangan,
                 ];
             }
         }
@@ -261,77 +257,24 @@ class Create extends Component
         foreach ($this->items as $index => $item) {
             $jumlah = $item['jumlah'];
             $harga_satuan = $item['harga_satuan'];
-            $diskon_satuan_1 = $item['diskon_satuan_1'];
-            $diskon_satuan_type_1 = $item['diskon_satuan_type_1'];
-            $diskon_satuan_2 = $item['diskon_satuan_2'];
-            $diskon_satuan_type_2 = $item['diskon_satuan_type_2'];
-            $diskon_satuan_3 = $item['diskon_satuan_3'];
-            $diskon_satuan_type_3 = $item['diskon_satuan_type_3'];
-            $diskon_satuan_4 = $item['diskon_satuan_4'];
-            $diskon_satuan_type_4 = $item['diskon_satuan_type_4'];
+            $diskon_satuan = $item['diskon_satuan'];
+            $diskon_satuan_type = $item['diskon_satuan_type'];
 
-            $diskon_satuan_persen_1 = 0;
-            $diskon_satuan_rupiah_1 = 0;
-            if ($diskon_satuan_1 > 0) {
-                if ($diskon_satuan_type_1 == Const_Umum::DISKON_TYPE_RP) {
-                    $diskon_satuan_rupiah_1 = $diskon_satuan_1;
-                    $diskon_satuan_persen_1 = $harga_satuan != 0 ? $diskon_satuan_rupiah_1 * 100 / $harga_satuan : 0;
+            $diskon_satuan_persen = 0;
+            $diskon_satuan_rupiah = 0;
+            if ($diskon_satuan > 0) {
+                if ($diskon_satuan_type == Const_Umum::DISKON_TYPE_PERCENT) {
+                    $diskon_satuan_rupiah = $diskon_satuan;
+                    $diskon_satuan_persen = $harga_satuan != 0 ? $diskon_satuan_rupiah * 100 / $harga_satuan : 0;
                 }
-                if ($diskon_satuan_type_1 == Const_Umum::DISKON_TYPE_PERCENT) {
-                    $diskon_satuan_persen_1 = $diskon_satuan_1;
-                    $diskon_satuan_rupiah_1 = $harga_satuan * $diskon_satuan_persen_1 / 100;
+                if ($diskon_satuan_type == Const_Umum::DISKON_TYPE_PERCENT) {
+                    $diskon_satuan_persen = $diskon_satuan;
+                    $diskon_satuan_rupiah = $harga_satuan * $diskon_satuan_persen / 100;
                 }
             }
 
-            $harga_setelah_diskon_1 = $harga_satuan - $diskon_satuan_rupiah_1;
-            $diskon_satuan_persen_2 = 0;
-            $diskon_satuan_rupiah_2 = 0;
-
-            if ($diskon_satuan_2 > 0) {
-                if ($diskon_satuan_type_2 == Const_Umum::DISKON_TYPE_RP) {
-                    $diskon_satuan_rupiah_2 = $diskon_satuan_2;
-                    $diskon_satuan_persen_2 = $harga_setelah_diskon_1 != 0 ? $diskon_satuan_rupiah_2 * 100 / $harga_setelah_diskon_1 : 0;
-                }
-                if ($diskon_satuan_type_2 == Const_Umum::DISKON_TYPE_PERCENT) {
-                    $diskon_satuan_persen_2 = $diskon_satuan_2;
-                    $diskon_satuan_rupiah_2 = $harga_setelah_diskon_1 * $diskon_satuan_persen_2 / 100;
-                }
-            }
-
-            $harga_setelah_diskon_2 = $harga_setelah_diskon_1 - $diskon_satuan_rupiah_2;
-            $diskon_satuan_persen_3 = 0;
-            $diskon_satuan_rupiah_3 = 0;
-
-            if ($diskon_satuan_3 > 0) {
-                if ($diskon_satuan_type_3 == Const_Umum::DISKON_TYPE_RP) {
-                    $diskon_satuan_rupiah_3 = $diskon_satuan_3;
-                    $diskon_satuan_persen_3 = $harga_setelah_diskon_2 != 0 ? $diskon_satuan_rupiah_3 * 100 / $harga_setelah_diskon_2 : 0;
-                }
-                if ($diskon_satuan_type_3 == Const_Umum::DISKON_TYPE_PERCENT) {
-                    $diskon_satuan_persen_3 = $diskon_satuan_3;
-                    $diskon_satuan_rupiah_3 = $harga_setelah_diskon_2 * $diskon_satuan_persen_3 / 100;
-                }
-            }
-
-            $harga_setelah_diskon_3 = $harga_setelah_diskon_2 - $diskon_satuan_rupiah_3;
-            $diskon_satuan_persen_4 = 0;
-            $diskon_satuan_rupiah_4 = 0;
-
-            if ($diskon_satuan_4 > 0) {
-                if ($diskon_satuan_type_4 == Const_Umum::DISKON_TYPE_RP) {
-                    $diskon_satuan_rupiah_4 = $diskon_satuan_4;
-                    $diskon_satuan_persen_4 = $harga_setelah_diskon_3 != 0 ? $diskon_satuan_rupiah_4 * 100 / $harga_setelah_diskon_3 : 0;
-                }
-                if ($diskon_satuan_type_4 == Const_Umum::DISKON_TYPE_PERCENT) {
-                    $diskon_satuan_persen_4 = $diskon_satuan_4;
-                    $diskon_satuan_rupiah_4 = $harga_setelah_diskon_3 * $diskon_satuan_persen_4 / 100;
-                }
-            }
-            $harga_net_satuan = $harga_setelah_diskon_3 - $diskon_satuan_rupiah_4;
+            $harga_net_satuan = $harga_satuan - $diskon_satuan_rupiah;
             $subtotal = $harga_net_satuan * $jumlah;
-
-            $diskon_satuan_rupiah = ($harga_satuan - $harga_net_satuan);
-            $diskon_satuan_persen = $harga_satuan == 0 ? 0 : ($diskon_satuan_rupiah * 100) / $harga_satuan;
 
             $this->items[$index]['diskon_satuan_persen'] = $diskon_satuan_persen;
             $this->items[$index]['diskon_satuan_rupiah'] = $diskon_satuan_rupiah;
@@ -351,7 +294,7 @@ class Create extends Component
 
         $diskon_rupiah = 0;
         if ($diskon > 0) {
-            if ($diskon_type == Const_Umum::DISKON_TYPE_RP) {
+            if ($diskon_type == Const_Umum::DISKON_TYPE_PERCENT) {
                 $diskon_rupiah = $diskon;
             }
             if ($diskon_type == Const_Umum::DISKON_TYPE_PERCENT) {
@@ -374,7 +317,7 @@ class Create extends Component
             $harga_net_satuan = $item['harga_net_satuan'];
             $subtotal = $item['subtotal'];
 
-            $dpp_satuan = $total == 0 ? 0 : _round($dpp / $total * $subtotal / $jumlah);
+            $dpp_satuan = _round($dpp / $total * $subtotal / $jumlah);
             $ppn_satuan = $dpp == 0 ? 0 : _round($dpp_satuan / $dpp * $ppn);
             $diskon_satuan_footer = $dpp == 0 ? 0 : _round($dpp_satuan / $dpp * $diskon_rupiah);
             $harga_net_satuan_akhir = $harga_net_satuan - $diskon_satuan_footer;

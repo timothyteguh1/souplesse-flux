@@ -10,7 +10,7 @@ class SH_SuratJalan
     public static function belumSelesai($include_ids = [])
     {
         $objs = SuratJalan::query()
-            ->with(['customer.area'])
+            ->with(['customer'])
             ->whereIn('status', [Const_Status::SURAT_JALAN_BELUM_SELESAI])
             ->orWhereIn('id', $include_ids)
             ->get();
@@ -19,10 +19,9 @@ class SH_SuratJalan
 
         foreach ($objs as $obj) {
             $results[$obj->id] = sprintf(
-                "[%s] -- %s -- %s",
+                "[%s] -- %s",
                 $obj->kode,
                 $obj->customer?->nama,
-                $obj->customer?->area?->nama,
             );
         }
 

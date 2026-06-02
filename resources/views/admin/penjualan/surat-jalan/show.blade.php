@@ -65,6 +65,15 @@
                     </td>
                 </tr>
                 <tr>
+                    <th>PIC</th>
+                    <td>
+                        <a href="{{ $obj->karyawan?->getRouteShow() }}">
+                            {{ $obj->karyawan?->kode }} -
+                            {{ $obj->karyawan?->nama }}
+                        </a>
+                    </td>
+                </tr>
+                {{-- <tr>
                     <th>Gudang</th>
                     <td>
                         <a href="{{ $obj->gudang->getRouteShow() }}">
@@ -72,7 +81,7 @@
                             {{ $obj->gudang->nama }}
                         </a>
                     </td>
-                </tr>
+                </tr> --}}
                 <tr>
                     <th>No Polisi</th>
                     <td>{{ $obj->no_polisi }}</td>
@@ -127,6 +136,14 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Biaya</th>
+                                    <th class="text-end">
+                                        {{ _number($obj->biaya) }}
+                                    </th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>

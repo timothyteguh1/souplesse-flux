@@ -23,14 +23,14 @@
                 <x-slot name="actions">
                     <div class="dropdown-divider"></div>
                     @if ($obj->canKonfirmasi())
-                        {{-- <button class="dropdown-item" wire:click="approve('{{ $obj->id }}')">
+                        <button class="dropdown-item" wire:click="approve('{{ $obj->id }}')">
                             <i class="ri-check-line label-icon align-middle fs-16 me-2"></i>
                             Approve
                         </button>
                         <button class="dropdown-item" wire:click="tolak('{{ $obj->id }}')">
                             <i class="ri-close-line label-icon align-middle fs-16 me-2"></i>
                             Tolak
-                        </button> --}}
+                        </button>
                         <button class="dropdown-item" wire:click="tutup('{{ $obj->id }}')">
                             <i class="ri-close-line label-icon align-middle fs-16 me-2"></i>
                             Tutup Pesanan
@@ -74,12 +74,12 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>PKP</th>
-                    <td>{{ $obj->is_pkp ? 'Ya' : 'Tidak' }}</td>
-                </tr>
-                <tr>
-                    <th>Include PPN</th>
-                    <td>{{ $obj->is_include_ppn ? 'Ya' : 'Tidak' }}</td>
+                    <th>Salesman</th>
+                    <td>
+                        <a href="{{ $obj->karyawan?->getRouteShow() }}">
+                            {{ $obj->karyawan?->nama }}
+                        </a>
+                    </td>
                 </tr>
                 <tr>
                     <th>Keterangan</th>
@@ -104,16 +104,17 @@
                             <thead>
                                 <tr class="bg-light text-uppercase">
                                     <th class="text-center" width="5%">#</th>
-                                    <th width="25%">Produk</th>
+                                    <th width="20%">Produk</th>
+                                    <th width="10%">Model</th>
                                     <th width="10%" class="text-end">Qty</th>
                                     <th width="10%" class="text-end">Harga</th>
                                     <th width="15%" class="text-center" colspan="2">Diskon per Qty</th>
-                                    <th width="10%">Detail Diskon</th>
-                                    <th width="20%" class="text-end">Subtotal</th>
+                                    <th width="15%" class="text-end">Subtotal</th>
+                                    <th width="10%" class="text-end">Note</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($obj->details()->with(['produk', 'satuan'])->get() as $detail)
+                                @foreach ($obj->details()->with(['produk.modelProduk', 'satuan'])->get() as $detail)
                                     <tr>
                                         <td class="text-center">
                                             {{ $loop->iteration }}
@@ -123,11 +124,11 @@
                                                 {{ $detail->produk->nama }}
                                             </a>
                                         </td>
+                                        <td>
+                                            {{ $detail->produk?->modelProduk?->nama }}
+                                        </td>
                                         <td class="text-end">
                                             {{ _number($detail->jumlah) }}
-                                            <a href="{{ optional($detail->satuan)->getRouteShow() }}">
-                                                {{ optional($detail->satuan)->nama }}
-                                            </a>
                                         </td>
                                         <td class="text-end">
                                             {{ _number($detail->harga_satuan) }}
@@ -136,41 +137,24 @@
                                         <td class="text-end">
                                             {{ _number($detail->diskon_satuan_rupiah) }}
                                         </td>
-                                        <td>
-                                            @for ($i = 1; $i <= 4; $i++)
-                                                @php
-                                                    $diskon = "diskon_satuan_$i";
-                                                    $type = "diskon_satuan_type_$i";
-                                                @endphp
-
-                                                @if ($detail->$diskon != 0)
-                                                    @if ($i > 1)
-                                                        <br>
-                                                    @endif
-                                                    Disk {{ $i }}:
-                                                    @if ($detail->$type == Const_Umum::DISKON_TYPE_RP)
-                                                        {{ $detail->$type . '. ' . _number($detail->$diskon) }}
-                                                    @else
-                                                        {{ _number($detail->$diskon) . $detail->$type }}
-                                                    @endif
-                                                @endif
-                                            @endfor
-                                        </td>
                                         <td class="text-end">
                                             {{ _number($detail->subtotal) }}
+                                        </td>
+                                        <td>
+                                            {{ $detail->keterangan }}
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="7" class="text-end">Total</th>
+                                    <th colspan="8" class="text-end">Total</th>
                                     <th class="text-end">
                                         {{ _number($obj->total) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="7" class="text-end">
+                                    <th colspan="8" class="text-end">
                                         Diskon Faktur ({{ _number($obj->diskon_persen) }}%)
                                     </th>
                                     <th class="text-end">
@@ -178,19 +162,19 @@
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="7" class="text-end">DPP</th>
+                                    <th colspan="8" class="text-end">DPP</th>
                                     <th class="text-end">
                                         {{ _number($obj->dpp) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="7" class="text-end">PPN ({{ _number($obj->ppn_percent) }}%)</th>
+                                    <th colspan="8" class="text-end">PPN ({{ _number($obj->ppn_percent) }}%)</th>
                                     <th class="text-end">
                                         {{ _number($obj->ppn) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="7" class="text-end">Grand Total</th>
+                                    <th colspan="8" class="text-end">Grand Total</th>
                                     <th class="text-end">
                                         {{ _number($obj->grandtotal) }}
                                     </th>

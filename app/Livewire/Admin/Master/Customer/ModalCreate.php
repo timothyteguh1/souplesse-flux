@@ -31,6 +31,7 @@ class ModalCreate extends Component
     public $provinsi;
     public $jatuh_tempo = 0;
     public $limit_piutang = 0;
+    public $items = [];
     protected $listeners = [
         'refreshInfo' => 'refreshInfo',
     ];
@@ -73,6 +74,8 @@ class ModalCreate extends Component
             'provinsi' => [],
             'jatuh_tempo' => ['required'],
             'limit_piutang' => ['required', 'numeric', 'min:0'],
+
+            'items' => ['nullable', 'array'],
         ];
     }
 

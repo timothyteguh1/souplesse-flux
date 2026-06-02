@@ -54,7 +54,7 @@ class SH_PesananPenjualan
     public static function belumDifakturkan($include_ids = [])
     {
         $objs = PesananPenjualan::query()
-            ->with(['customer.area'])
+            ->with(['customer'])
             ->whereIn('status', [Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI, Const_Status::PESANAN_PENJUALAN_BELUM_DIKIRIM, Const_Status::PESANAN_PENJUALAN_BELUM_DICETAK])
             ->orWhereIn('id', $include_ids)
             ->get();
@@ -63,10 +63,9 @@ class SH_PesananPenjualan
 
         foreach ($objs as $obj) {
             $results[$obj->id] = sprintf(
-                "[%s] -- %s -- %s",
+                "[%s] -- %s",
                 $obj->kode,
                 $obj->customer?->nama,
-                $obj->customer?->area?->nama,
             );
         }
 

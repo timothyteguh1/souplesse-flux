@@ -54,6 +54,8 @@
                                 :sort-asc="$sortAsc" />
                             <x-admin::utils.th-sortable :label="'Customer'" :field="'customer_id'" :sort-field="$sortField"
                                 :sort-asc="$sortAsc" />
+                            <x-admin::utils.th-sortable :label="'PIC'" :field="'karyawan_id'" :sort-field="$sortField"
+                                :sort-asc="$sortAsc" />
                             <x-admin::utils.th-sortable :label="'No Polisi'" :field="'no_polisi'" :sort-field="$sortField"
                                 :sort-asc="$sortAsc" />
                             <x-admin::utils.th-sortable-status :label="'Status'" :field="'status'" :sort-field="$sortField"
@@ -80,6 +82,11 @@
                             <td>
                                 <a href="{{ $obj->customer->getRouteShow() }}">
                                     {{ $obj->customer->nama }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ $obj->karyawan?->getRouteShow() }}">
+                                    {{ $obj->karyawan?->nama }}
                                 </a>
                             </td>
                             <td>{{ $obj->no_polisi }}</td>

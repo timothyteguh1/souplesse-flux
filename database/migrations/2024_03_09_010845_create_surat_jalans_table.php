@@ -20,6 +20,8 @@ return new class extends Migration {
             $table->datetime('tanggal');
             $table->foreignUuid('pesanan_penjualan_id')->index()->constrained('pesanan_penjualans');
             $table->foreignUuid('customer_id')->index()->constrained('customers');
+            $table->foreignUuid('karyawan_id')->index()->constrained('karyawans');
+            $table->decimal('biaya', 18, 4);
             $table->string('no_polisi')->nullable();
             $table->foreignUuid('gudang_id')->index()->constrained('gudangs');
             $table->text('keterangan')->nullable();

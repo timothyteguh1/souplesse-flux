@@ -66,27 +66,37 @@ class PesananPenjualanService
         return true;
     }
 
-    public static function updateStatusBelumDicetak(PesananPenjualan $obj)
+    public static function updateStatusMenungguPersetujuan(PesananPenjualan $obj)
     {
-        $obj->status = Const_Status::PESANAN_PENJUALAN_BELUM_DICETAK;
+        if ($obj->fakturPenjualanDetails()->count() > 0) {
+            throw new GeneralException('Pesanan Penjualan tidak bisa diubah statusnya karena sudah ada Faktur Penjualan.');
+        }
+
+        $obj->status = Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN;
         $obj->save();
     }
 
-    public static function updateStatusBelumDikirim(PesananPenjualan $obj)
+    public static function updateStatusTolak(PesananPenjualan $obj)
     {
-        $obj->status = Const_Status::PESANAN_PENJUALAN_BELUM_DIKIRIM;
+        $obj->status = Const_Status::PESANAN_PENJUALAN_DITOLAK;
+        $obj->save();
+    }
+
+    public static function updateStatusTerima(PesananPenjualan $obj)
+    {
+        $obj->status = Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI;
+        $obj->save();
+    }
+
+    public static function updateStatusTutup(PesananPenjualan $obj)
+    {
+        $obj->status = Const_Status::PESANAN_PENJUALAN_DITUTUP;
         $obj->save();
     }
 
     public static function updateStatusSelesai(PesananPenjualan $obj)
     {
         $obj->status = Const_Status::PESANAN_PENJUALAN_SELESAI;
-        $obj->save();
-    }
-
-    public static function updateStatusBatal(PesananPenjualan $obj)
-    {
-        $obj->status = Const_Status::PESANAN_PENJUALAN_BATAL;
         $obj->save();
     }
 

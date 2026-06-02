@@ -63,7 +63,7 @@
                             <x-admin::utils.th-sortable :label="'Customer'" :field="'customer_id'" :sort-field="$sortField"
                                 :sort-asc="$sortAsc" width="15%" />
                             <th class="text-uppercase text-end" width="15%">Grand Total</th>
-                            <x-admin::utils.th-sortable :label="'Dibuat Oleh'" :field="'status'" :sort-field="$sortField"
+                            <x-admin::utils.th-sortable :label="'Dibuat Oleh'" :field="'karyawan_id'" :sort-field="$sortField"
                                 :sort-asc="$sortAsc" style="width: 150px" />
                             <x-admin::utils.th-sortable :label="'Status'" :field="'status'" :sort-field="$sortField"
                                 :sort-asc="$sortAsc" style="width: 150px" />
@@ -88,12 +88,12 @@
                             <td class="text-end">
                                 {{ _number($obj->grandtotal) }}
                             </td>
-                            <td>{{ $obj?->createdBy?->causer?->name }}</td>
+                            <td>{{ $obj?->karyawan?->nama }}</td>
                             <td>{{ $obj->status }}</td>
                             <td class="text-center">
                                 <x-admin::includes.pages.browse-table-action :obj="$obj">
                                     @if ($obj->canKonfirmasi())
-                                        {{-- <li>
+                                        <li>
                                             <button class="dropdown-item" wire:click="approve('{{ $obj->id }}')">
                                                 <i class="ri-check-line label-icon align-middle fs-16 me-2"></i>
                                                 Approve
@@ -104,7 +104,7 @@
                                                 <i class="ri-close-line label-icon align-middle fs-16 me-2"></i>
                                                 Tolak
                                             </button>
-                                        </li> --}}
+                                        </li>
                                         <li>
                                             <button class="dropdown-item" wire:click="tutup('{{ $obj->id }}')">
                                                 <i class="ri-close-line label-icon align-middle fs-16 me-2"></i>

@@ -56,7 +56,7 @@ class Index extends Component
     private function getQuery()
     {
         return SuratJalan::query()
-            ->with(['customer', 'cabang', 'pesananPenjualan'])
+            ->with(['customer', 'cabang', 'pesananPenjualan', 'karyawan'])
             ->whereIn('cabang_id', $this->cabang_ids)
             ->keywordSearch($this->keyword, ['kode', 'keterangan'])
             ->when($this->tanggal, function ($query) {

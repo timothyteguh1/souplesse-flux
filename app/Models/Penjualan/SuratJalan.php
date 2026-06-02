@@ -2,21 +2,22 @@
 
 namespace App\Models\Penjualan;
 
-use Carbon\Carbon;
-use App\Traits\HasCabang;
 use App\Casts\AsDateTimeCast;
-use App\Models\Master\Gudang;
-use App\Traits\HasAutoNumber;
-use App\Traits\HasCoreFeature;
 use App\Models\Master\Customer;
-use App\Utilities\Constants\Const_Umum;
-use Illuminate\Database\Eloquent\Model;
-use App\Utilities\Constants\Const_Status;
+use App\Models\Master\Gudang;
+use App\Models\Master\Karyawan;
+use App\Traits\HasAutoNumber;
+use App\Traits\HasCabang;
+use App\Traits\HasCoreFeature;
 use App\Traits\HasMutasiTransaksiAsReference;
+use App\Utilities\Constants\Const_Status;
+use App\Utilities\Constants\Const_Umum;
 use App\Utilities\Functions\TransactionFunction;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SuratJalan extends Model
 {
@@ -36,8 +37,10 @@ class SuratJalan extends Model
         'tanggal',
         'pesanan_penjualan_id',
         'customer_id',
+        'karyawan_id',
         'gudang_id',
         'no_polisi',
+        'biaya',
         'keterangan',
         'status',
     ];
@@ -68,6 +71,11 @@ class SuratJalan extends Model
     public function pesananPenjualan(): BelongsTo
     {
         return $this->belongsTo(PesananPenjualan::class);
+    }
+
+    public function karyawan(): BelongsTo
+    {
+        return $this->belongsTo(Karyawan::class);
     }
 
     public function customer(): BelongsTo

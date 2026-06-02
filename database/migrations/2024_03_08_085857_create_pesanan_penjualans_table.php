@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->unique(['cabang_id', 'kode']);
             $table->datetime('tanggal');
             $table->foreignUuid('customer_id')->index()->constrained('customers');
+            $table->foreignUuid('karyawan_id')->index()->nullable()->constrained('karyawans');
             $table->boolean('is_pkp')->default(true);
             $table->boolean('is_include_ppn')->default(true);
             $table->decimal('ppn_percent', 18, 4);

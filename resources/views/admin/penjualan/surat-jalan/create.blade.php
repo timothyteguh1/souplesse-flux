@@ -62,6 +62,17 @@
 
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label">
+                                        PIC
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-9">
+                                        <x-admin::input.select2 :name="'karyawan_id'" :options="$this->optionsKaryawanId"
+                                            placeholder="- Pilih PIC -" />
+                                    </div>
+                                </div>
+
+                                {{-- <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">
                                         Gudang
                                         <span class="text-danger">*</span>
                                     </label>
@@ -69,7 +80,7 @@
                                         <x-admin::input.select2 :name="'gudang_id'" :defer="false" :options="$this->optionsGudangId"
                                             placeholder="- Pilih Gudang -" />
                                     </div>
-                                </div>
+                                </div> --}}
 
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label">
@@ -148,6 +159,21 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12 col-md-6 offset-md-6">
+                                <table class="table table-bordered align-middle">
+                                    <tbody>
+                                        <tr>
+                                            <th>Biaya</th>
+                                            <th class="text-end">
+                                                <x-admin::input.number :name="'biaya'" placeholder="Biaya" />
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 

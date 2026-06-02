@@ -97,30 +97,11 @@
                                                     placeholder="Masukkan jalan" disabled />
                                             </div>
 
-                                            <div class="col-6">
+                                            <div class="col-12">
                                                 <x-admin::input.text :name="'kota'" prepend-text="Kota"
                                                     placeholder="Masukkan kota" disabled />
                                             </div>
-                                            <div class="col-6">
-                                                <x-admin::input.text :name="'kode_pos'" prepend-text="K. Pos"
-                                                    placeholder="Masukkan kode pos" disabled />
-                                            </div>
-                                            <div class="col-12 mt-3">
-                                                <x-admin::input.text :name="'provinsi'" prepend-text="Provinsi"
-                                                    placeholder="Masukkan provinsi" disabled />
-                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label class="col-lg-3 col-form-label"></label>
-                                    <div class="col-lg-9">
-                                        <x-admin::input.checkbox :name="'is_pkp'" :label="'PKP'"
-                                            :value="$is_pkp" :inline="true" :disabled="true" />
-
-                                        <x-admin::input.checkbox :name="'is_include_ppn'" :label="'Include PPN'"
-                                            :value="$is_include_ppn" :inline="true" :disabled="true" />
                                     </div>
                                 </div>
                             </div>
@@ -128,235 +109,101 @@
                     </div>
 
                     <div class="card-body pt-4 border-top">
-                        <div x-data="{ activeTab: 'produk' }">
-                            <div>
-                                <ul class="nav nav-custom-light nav-border-top nav-border-top-primary nav-justified rounded card-header-tabs border"
-                                    role="tablist">
-                                    <li class="nav-item">
-                                        <a class="nav-link" :class="activeTab == 'produk' && 'active'"
-                                            data-bs-toggle="tab" href="#tabProduk" role="tab"
-                                            @click="activeTab = 'produk'">
-                                            Produk
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" :class="activeTab == 'beban' && 'active'"
-                                            data-bs-toggle="tab" href="#tabBeban" role="tab"
-                                            @click="activeTab = 'beban'">
-                                            Beban
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
 
-                            <div class="py-4">
-                                <div class="tab-content">
-                                    <div class="tab-pane" :class="activeTab == 'produk' && 'active show'" id="tabProduk"
-                                        role="tabpanel">
-                                        <div class="row">
-                                            <div class="mb-3">
-                                                <div class="row g-3">
-                                                    <div class="col-12">
-                                                        <x-admin::input.select2id :id="'input_produk_id'" :name="'input_produk_id'"
-                                                            :options="$this->optionsInputProdukId" :defer="false"
-                                                            placeholder="Produk" />
-                                                    </div>
-                                                    <div class="col-md-4 col-12">
-                                                        <x-admin::input.select2id :id="'input_satuan_id'" :name="'input_satuan_id'"
-                                                            :options="[]" :defer="false"
-                                                            placeholder="Satuan" />
-                                                    </div>
-                                                    <div class="col-md-4 col-12">
-                                                        <x-admin::input.number :name="'input_jumlah'" placeholder="Qty" />
-                                                    </div>
-                                                    <div class="col-md-4 col-12">
-                                                        <x-admin::input.number :name="'input_harga_satuan'" placeholder="Harga" />
-                                                    </div>
-                                                    <div class="col-md-3 col-12">
-                                                        <x-admin::input.diskon :type="'input_diskon_satuan_type_1'" :name="'input_diskon_satuan_1'"
-                                                            placeholder="Diskon Satuan 1" />
-                                                    </div>
-                                                    <div class="col-md-3 col-12">
-                                                        <x-admin::input.diskon :type="'input_diskon_satuan_type_2'" :name="'input_diskon_satuan_2'"
-                                                            placeholder="Diskon Satuan 2" />
-                                                    </div>
-                                                    <div class="col-md-3 col-12">
-                                                        <x-admin::input.diskon :type="'input_diskon_satuan_type_3'" :name="'input_diskon_satuan_3'"
-                                                            placeholder="Diskon Satuan 3" />
-                                                    </div>
-                                                    <div class="col-md-3 col-12">
-                                                        <x-admin::input.diskon :type="'input_diskon_satuan_type_4'" :name="'input_diskon_satuan_4'"
-                                                            placeholder="Diskon Satuan 4" />
-                                                    </div>
 
-                                                    <div class=" col-12">
-                                                        @if ($index_edit_item === null)
-                                                            <x-admin::buttons.create-add-item :action="'addItem'" />
-                                                        @else
-                                                            <x-admin::buttons.create-edit-item :action="'editItem'" />
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
+                        <div class="mb-3">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <x-admin::input.select2 :name="'input_produk_id'" :options="$this->optionsInputProdukId" :defer="false"
+                                        placeholder="Produk" />
+                                </div>
+                                <div class="col-md-2 col-12">
+                                    <x-admin::input.number :name="'input_jumlah'" placeholder="Qty" />
+                                </div>
+                                <div class="col-md-3 col-12">
+                                    <x-admin::input.number :name="'input_harga_satuan'" placeholder="Harga" />
+                                </div>
+                                <div class="col-md-3 col-12">
+                                    <x-admin::input.diskon :type="'input_diskon_satuan_type'" :name="'input_diskon_satuan'"
+                                        placeholder="Diskon Satuan" />
+                                </div>
+                                <div class="col-md-4 col-12">
+                                    <x-admin::input.text :type="'input_keterangan'" :name="'input_keterangan'" placeholder="Note" />
+                                </div>
 
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered align-middle table-nowrap mb-0">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th width="5%" class="text-uppercase">No</th>
-                                                            <th width="20%" class="text-uppercase">Produk</th>
-                                                            <th width="10%" class="text-uppercase">Satuan</th>
-                                                            <th width="10%" class="text-uppercase text-end">Qty
-                                                            </th>
-                                                            <th width="10%" class="text-uppercase text-end">Harga
-                                                            </th>
-                                                            <th class="text-uppercase text-end" colspan="2">Diskon
-                                                            </th>
-                                                            <th width="10%" class="text-uppercase text-end">Detail
-                                                                Diskon</th>
-                                                            <th width="10%" class="text-uppercase text-end">
-                                                                Subtotal</th>
-                                                            <th width="10%" class="text-uppercase text-end">Action
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($items as $index => $item)
-                                                            <tr>
-                                                                <td>{{ $loop->iteration }}</td>
-                                                                <td>
-                                                                    {{ $item['produk_nama'] }}
-                                                                </td>
-                                                                <td>
-                                                                    {{ $item['satuan_nama'] }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['jumlah']) }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['harga_satuan']) }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['diskon_satuan_persen']) }}%
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['diskon_satuan_rupiah']) }}
-                                                                </td>
-                                                                <td>
-                                                                    @for ($i = 1; $i <= 4; $i++)
-                                                                        @php
-                                                                            $diskon = "diskon_satuan_$i";
-                                                                            $type = "diskon_satuan_type_$i";
-                                                                        @endphp
-
-                                                                        @if ($item[$diskon] != 0)
-                                                                            @if ($i > 1)
-                                                                                <br>
-                                                                            @endif
-                                                                            Disk {{ $i }}:
-                                                                            @if ($item[$type] == Const_Umum::DISKON_TYPE_RP)
-                                                                                {{ $item[$type] . '. ' . _number($item[$diskon]) }}
-                                                                            @else
-                                                                                {{ _number($item[$diskon]) . $item[$type] }}
-                                                                            @endif
-                                                                        @endif
-                                                                    @endfor
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['subtotal']) }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    <button type="button"
-                                                                        wire:click="edit({{ $loop->index }})"
-                                                                        class="btn btn-sm btn-warning btn-icon waves-effect waves-light me-2">
-                                                                        <i class="ri-pencil-fill"></i>
-                                                                    </button>
-
-                                                                    <button type="button"
-                                                                        wire:click="removeItem({{ $loop->index }})"
-                                                                        class="btn btn-sm btn-danger btn-icon waves-effect waves-light">
-                                                                        <i class="ri-delete-bin-5-line"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="tab-pane" :class="activeTab == 'beban' && 'active'" id="tabBeban"
-                                        role="tabpanel">
-                                        <div class="row">
-                                            <div class="mb-3">
-                                                <div class="row g-3 align-items-center">
-                                                    <div class="col-md-5 col-12">
-                                                        <x-admin::input.select2 :name="'input_beban_beban_id'" :options="$this->optionsInputBebanBebanId"
-                                                            placeholder="Beban" />
-                                                    </div>
-                                                    <div class="col-md-4 col-12">
-                                                        <x-admin::input.number :name="'input_beban_jumlah'"
-                                                            placeholder="Jumlah" />
-                                                    </div>
-
-                                                    <div class="col-md-3 col-12">
-                                                        @if ($index_edit_item_beban === null)
-                                                            <x-admin::buttons.create-add-item :action="'addItemBeban'" />
-                                                        @else
-                                                            <x-admin::buttons.create-edit-item :action="'editItemBeban'" />
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered align-middle table-nowrap mb-0">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th width="5%" class="text-uppercase">No</th>
-                                                            <th width="40%" class="text-uppercase">Beban</th>
-                                                            <th width="40%" class="text-uppercase text-end">Jumlah
-                                                            </th>
-                                                            <th width="15%" class="text-uppercase text-end">Action
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($items_beban as $index => $item)
-                                                            <tr>
-                                                                <td>{{ $loop->iteration }}</td>
-                                                                <td>
-                                                                    {{ $item['beban_nama'] }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ _number($item['jumlah']) }}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    <button type="button"
-                                                                        wire:click="editBeban({{ $loop->index }})"
-                                                                        class="btn btn-sm btn-warning btn-icon waves-effect waves-light me-2">
-                                                                        <i class="ri-pencil-fill"></i>
-                                                                    </button>
-
-                                                                    <button type="button"
-                                                                        wire:click="removeItemBeban({{ $loop->index }})"
-                                                                        class="btn btn-sm btn-danger btn-icon waves-effect waves-light">
-                                                                        <i class="ri-delete-bin-5-line"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="col-12">
+                                    @if ($index_edit_item === null)
+                                        <x-admin::buttons.create-add-item :action="'addItem'" />
+                                    @else
+                                        <x-admin::buttons.create-edit-item :action="'editItem'" />
+                                    @endif
                                 </div>
                             </div>
                         </div>
 
-                        <hr />
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle table-nowrap mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="5%" class="text-uppercase">No</th>
+                                        <th width="20%" class="text-uppercase">Produk</th>
+                                        <th width="10%" class="text-uppercase">Model</th>
+                                        <th width="10%" class="text-uppercase text-end">Qty</th>
+                                        <th width="10%" class="text-uppercase text-end">Harga
+                                        </th>
+                                        <th class="text-uppercase text-end" colspan="2">Diskon
+                                        </th>
+                                        <th width="15%" class="text-uppercase text-end">Subtotal
+                                        </th>
+                                        <th width="10%" class="text-uppercase">Note</th>
+                                        <th width="10%" class="text-uppercase text-end">Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($items as $item)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>
+                                                {{ $item['produk_nama'] }}
+                                            </td>
+                                            <td>
+                                                {{ $item['model_produk_nama'] }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ _number($item['jumlah']) }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ _number($item['harga_satuan']) }}
+                                            </td>
+                                            <td class="text-end" width="5%">
+                                                {{ _number($item['diskon_satuan_persen']) }}%
+                                            </td>
+                                            <td class="text-end" width="10%">
+                                                {{ _number($item['diskon_satuan_rupiah']) }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ _number($item['subtotal']) }}
+                                            </td>
+                                            <td>
+                                                {{ $item['keterangan'] }}
+                                            </td>
+                                            <td class="text-end">
+                                                <button type="button" wire:click="edit({{ $loop->index }})"
+                                                    class="btn btn-sm btn-warning btn-icon waves-effect waves-light me-2">
+                                                    <i class="ri-pencil-fill"></i>
+                                                </button>
+
+                                                <button type="button" wire:click="removeItem({{ $loop->index }})"
+                                                    class="btn btn-sm btn-danger btn-icon waves-effect waves-light">
+                                                    <i class="ri-delete-bin-5-line"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
 
                         <div class="row mt-4">
                             <div class="col-12 col-md-6 offset-md-6">
