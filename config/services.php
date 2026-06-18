@@ -30,5 +30,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'accurate' => [
+        'client_id' => env('ACCURATE_CLIENT_ID'),
+        'client_secret' => env('ACCURATE_CLIENT_SECRET'),
+        'redirect_uri' => env('ACCURATE_REDIRECT_URI'),
+        'base_url' => env('ACCURATE_BASE_URL'),
+        'api_url' => env('ACCURATE_API_URL'),
+    ],
 
 ];

@@ -26,6 +26,16 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
+            'name' => 'Deus Code',
+            'username' => 'deus',
+            'email' => null,
+            'password' => Hash::make('123456'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+            'is_developer' => true,
+        ]);
+
+        User::create([
             'name' => 'Owner',
             'username' => 'owner',
             'email' => null,

@@ -118,4 +118,11 @@ Route::group([
         Route::get('backup', App\Livewire\Admin\System\Database\Backup::class)->name('backup');
         Route::get('restore', App\Livewire\Admin\System\Database\Restore::class)->name('restore');
     });
+        // admin.system.accurate
+    Route::group([
+        'prefix' => 'accurate',
+        'as' => 'accurate.',
+    ], function () {
+        Route::get('', \App\Livewire\Admin\System\Accurate\Index::class)->name('index');
+    });
 });

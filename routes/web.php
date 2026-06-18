@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CabangMiddleware;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AccurateController;
 
 //Route::get('/', function () {
 //    return view('welcome');
@@ -9,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 
 // --------------------------------------------------------------------------
 // ADMIN ROUTES
+// Accurate OAuth
+// Accurate OAuth - letakkan di LUAR group admin (sebelum Route::group admin)
+Route::get('/accurate/connect', [AccurateController::class, 'connect'])->name('accurate.connect');
+Route::get('/accurate/callback', [AccurateController::class, 'callback'])->name('accurate.callback');
 
 Route::group([
     'prefix' => '',

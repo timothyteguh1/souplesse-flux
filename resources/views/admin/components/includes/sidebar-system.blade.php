@@ -27,6 +27,15 @@
                     'permissions' => ['admin.system.role', 'admin.system.role.index'],
                     'children' => null,
                 ],
+                [
+                    'id' => 'accurate',
+                    'label' => 'Accurate',
+                    'icon' => null,
+                    'route' => route('admin.system.accurate.index'),
+                    'active' => 'admin.system.accurate.*',
+                    'permissions' => ['admin.system.accurate', 'admin.system.accurate.index'],
+                    'children' => null,
+                ],
                 // [
                 //     'id' => 'setting',
                 //     'idSidebar' => 'Setting',
