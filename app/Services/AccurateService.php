@@ -2,189 +2,97 @@
 
 namespace App\Services;
 
-use App\Models\AccurateToken;
+use App\Models\Master\Perusahaan;
+use App\Services\Accurate\AccurateTokenService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class AccurateService
 {
-    protected string $clientId;
-    protected string $clientSecret;
-    protected string $redirectUri;
     protected string $baseUrl;
 
-    public function __construct()
+    public function __construct(protected AccurateTokenService $tokenService)
     {
-        $this->clientId     = config('services.accurate.client_id');
-        $this->clientSecret = config('services.accurate.client_secret');
-        $this->redirectUri  = config('services.accurate.redirect_uri');
-        $this->baseUrl      = config('services.accurate.base_url');
+        $this->baseUrl = config('accurate.base_url', 'https://account.accurate.id');
     }
 
-    // ==========================================
-    // OAUTH
-    // ==========================================
-
-    public function getAuthorizationUrl(): string
+    public function getDatabaseList(Perusahaan $perusahaan): array
     {
-        $params = http_build_query([
-            'client_id'     => $this->clientId,
-            'response_type' => 'code',
-            'redirect_uri'  => $this->redirectUri,
-            'scope'         => 'item_view item_save customer_view customer_save vendor_view vendor_save sales_invoice_view sales_invoice_save purchase_order_view purchase_order_save',
-        ]);
+        $token = $this->tokenService->getValidToken($perusahaan);
+        if (!$token) return [];
 
-        return "{$this->baseUrl}/oauth/authorize?{$params}";
+        $response = Http::withToken($token)->get("{$this->baseUrl}/api/db-list.do");
+        if (!$response->successful()) return [];
+        
+        return $response->json('d') ?? [];
     }
 
-    public function exchangeCodeForToken(string $code): bool
+    public function selectDatabase(Perusahaan $perusahaan, string $dbId, string $dbAlias): bool
     {
-        $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
-            ->asForm()
-            ->post("{$this->baseUrl}/oauth/token", [
-                'code'         => $code,
-                'grant_type'   => 'authorization_code',
-                'redirect_uri' => $this->redirectUri,
-            ]);
-
-        if (!$response->successful()) {
-            Log::error('Accurate OAuth error', $response->json() ?? []);
-            return false;
-        }
-
-        $data = $response->json();
-
-        AccurateToken::updateOrCreate(
-            ['id' => 1],
-            [
-                'access_token'  => $data['access_token'],
-                'refresh_token' => $data['refresh_token'] ?? null,
-                'token_type'    => $data['token_type'] ?? 'Bearer',
-                'expires_in'    => $data['expires_in'] ?? null,
-                'expires_at'    => now()->addSeconds($data['expires_in'] ?? 3600),
-                'is_connected'  => false,
-            ]
-        );
-
-        return true;
-    }
-
-    public function refreshToken(): bool
-    {
-        $token = AccurateToken::getInstance();
-        if (!$token || !$token->refresh_token) return false;
-
-        $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
-            ->asForm()
-            ->post("{$this->baseUrl}/oauth/token", [
-                'grant_type'    => 'refresh_token',
-                'refresh_token' => $token->refresh_token,
-            ]);
-
-        if (!$response->successful()) {
-            Log::error('Accurate refresh token error', $response->json() ?? []);
-            return false;
-        }
-
-        $data = $response->json();
-
-        $token->update([
-            'access_token'  => $data['access_token'],
-            'refresh_token' => $data['refresh_token'] ?? $token->refresh_token,
-            'expires_in'    => $data['expires_in'] ?? null,
-            'expires_at'    => now()->addSeconds($data['expires_in'] ?? 3600),
-        ]);
-
-        return true;
-    }
-
-    // ==========================================
-    // DATABASE ACCURATE
-    // ==========================================
-
-public function getDatabaseList(): array
-{
-    $token = $this->getValidToken();
-    if (!$token) return [];
-
-    $response = Http::withToken($token->access_token)
-        ->get("{$this->baseUrl}/api/db-list.do");
-
-    // temporary debug
-    Log::info('Accurate db-list response', [
-        'status' => $response->status(),
-        'body'   => $response->body(),
-    ]);
-
-    if (!$response->successful()) {
-        Log::error('Accurate get db list error', $response->json() ?? []);
-        return [];
-    }
-
-    return $response->json('d') ?? [];
-}
-
-    public function selectDatabase(string $dbId, string $dbAlias): bool
-    {
-        $token = $this->getValidToken();
+        $token = $this->tokenService->getValidToken($perusahaan);
         if (!$token) return false;
 
-        // 1. Wajib tembak open-db.do untuk mendapatkan SESSION ID dan HOST SERVER
-        $response = Http::withToken($token->access_token)
-            ->get("{$this->baseUrl}/api/open-db.do", [
-                'id' => $dbId
-            ]);
-
-        if (!$response->successful()) {
-            Log::error('Accurate open-db error', $response->json() ?? []);
-            return false;
-        }
+        $response = Http::withToken($token)->get("{$this->baseUrl}/api/open-db.do", ['id' => $dbId]);
+        if (!$response->successful()) return false;
 
         $data = $response->json();
-        
-        // Bersihkan tulisan https:// agar host murni (contoh: zeus.accurate.id)
         $host = str_replace(['https://', 'http://'], '', $data['host'] ?? '');
 
-        // 2. Simpan SESSION dari Accurate ke kolom db_id, dan host ke db_host
-        $token->update([
-            'db_id'        => $data['session'] ?? $dbId, 
-            'db_alias'     => $dbAlias,
-            'db_host'      => $host,
-            'is_connected' => true,
+        $perusahaan->update([
+            'accurate_db_id'    => $data['session'] ?? $dbId, 
+            'accurate_db_alias' => $dbAlias,
+            'accurate_host'     => $host,
         ]);
 
         return true;
     }
 
     // ==========================================
-    // API HELPER
+    // API HELPER (BUG FIXED)
     // ==========================================
 
-    public function getValidToken(): ?AccurateToken
+    public function apiGet(Perusahaan $perusahaan, string $endpoint, array $params = []): ?array
     {
-        $token = AccurateToken::getInstance();
-        if (!$token) return null;
+        $token = $this->tokenService->getValidToken($perusahaan);
+        if (!$token || !$perusahaan->accurate_host) return null;
 
-        if ($token->isExpired()) {
-            $refreshed = $this->refreshToken();
-            if (!$refreshed) return null;
-            $token->refresh();
-        }
+        // FIXED: Menambahkan sisipan '/accurate/api' pada URL
+        $url = "https://{$perusahaan->accurate_host}/accurate/api{$endpoint}";
 
-        return $token;
-    }
-
-    public function apiGet(string $endpoint, array $params = []): ?array
-    {
-        $token = $this->getValidToken();
-        if (!$token || !$token->db_host) return null;
-
-        $response = Http::withToken($token->access_token)
-            ->withHeaders(['X-Session-ID' => $token->db_id])
-            ->get("https://{$token->db_host}/api{$endpoint}", $params);
+        $response = Http::withToken($token)
+            ->withHeaders(['X-Session-ID' => $perusahaan->accurate_db_id])
+            ->get($url, $params);
 
         if (!$response->successful()) {
-            Log::error("Accurate API GET {$endpoint} error", $response->json() ?? []);
+            Log::error("Accurate API GET {$endpoint} error", [
+                'status' => $response->status(), 
+                'body' => $response->body()
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    public function apiPost(Perusahaan $perusahaan, string $endpoint, array $data = []): ?array
+    {
+        $token = $this->tokenService->getValidToken($perusahaan);
+        if (!$token || !$perusahaan->accurate_host) return null;
+
+        $url = "https://{$perusahaan->accurate_host}/accurate/api{$endpoint}";
+
+        // Tambahkan ->timeout(60) agar PHP lebih sabar menunggu respon Accurate
+        $response = Http::withToken($token)
+            ->withHeaders(['X-Session-ID' => $perusahaan->accurate_db_id])
+            ->timeout(60) // <--- TAMBAHAN INI
+            ->asForm()
+            ->post($url, $data);
+
+        if (!$response->successful()) {
+            Log::error("Accurate API POST {$endpoint} error", [
+                'status' => $response->status(), 
+                'body' => $response->body()
+            ]);
             return null;
         }
 
@@ -195,43 +103,17 @@ public function getDatabaseList(): array
     // SYNC DATA MASTER
     // ==========================================
 
-    public function getItems(): array|false
+    public function getItems(Perusahaan $perusahaan): array|false
     {
-        // Accurate membutuhkan parameter 'fields' untuk menentukan kolom apa saja yang mau ditarik.
-        // Kita tarik id, no (Kode Barang), name (Nama Barang), itemCategory, dan unit1Name (Satuan).
-        $response = $this->apiGet('/item/list.do', [
-            'fields' => 'id,no,name,itemCategory,unit1Name'
+        $response = $this->apiGet($perusahaan, '/item/list.do', [
+            // KITA TAMBAHKAN unitPrice, vendorPrice, dan quantity
+            'fields' => 'id,no,name,itemCategory,unit1Name,unitPrice,vendorPrice,quantity'
         ]);
 
-        // API Accurate selalu mengembalikan array dengan key 's' (boolean success) dan 'd' (data array)
         if (isset($response['s']) && $response['s'] === true) {
             return $response['d']; 
         }
 
-        Log::error('Accurate Get Items Failed', $response ?? []);
         return false;
-    }
-
-    public function apiPost(string $endpoint, array $data = []): ?array
-    {
-        $token = $this->getValidToken();
-        if (!$token || !$token->db_host) return null;
-
-        $response = Http::withToken($token->access_token)
-            ->withHeaders(['X-Session-ID' => $token->db_id])
-            ->asForm()
-            ->post("https://{$token->db_host}/api{$endpoint}", $data);
-
-        if (!$response->successful()) {
-            Log::error("Accurate API POST {$endpoint} error", $response->json() ?? []);
-            return null;
-        }
-
-        return $response->json();
-    }
-
-    public function disconnect(): void
-    {
-        AccurateToken::truncate();
     }
 }

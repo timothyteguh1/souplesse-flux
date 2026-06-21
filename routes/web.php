@@ -10,9 +10,8 @@ use App\Http\Controllers\AccurateController;
 
 // --------------------------------------------------------------------------
 // ADMIN ROUTES
-// Accurate OAuth
 // Accurate OAuth - letakkan di LUAR group admin (sebelum Route::group admin)
-Route::get('/accurate/connect', [AccurateController::class, 'connect'])->name('accurate.connect');
+Route::get('/perusahaan/{perusahaan}/accurate/connect', [AccurateController::class, 'connect'])->name('accurate.connect');
 Route::get('/accurate/callback', [AccurateController::class, 'callback'])->name('accurate.callback');
 
 Route::group([

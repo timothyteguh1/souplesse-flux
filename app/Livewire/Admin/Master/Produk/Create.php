@@ -44,7 +44,7 @@ class Create extends Component
             ],
             'kategori_produk_id' => ['required'],
             'jenis_produk_id' => ['required'],
-            'model_produk_id' => ['required'],
+            'model_produk_id' => ['nullable'], // FIX: Ubah jadi nullable
             'satuan_id' => ['required'],
             'harga_beli' => ['nullable', 'numeric', 'min:0'],
             'harga_jual' => ['nullable', 'numeric', 'min:0'],

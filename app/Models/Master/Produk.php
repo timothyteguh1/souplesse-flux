@@ -35,6 +35,8 @@ class Produk extends Model
         'default_satuan_beli_id',
         'default_satuan_jual_id',
         'accurate_id', // Kolom untuk menyimpan ID dari Accurate
+        'accurate_no',
+        'accurate_synced_at',
     ];
 
     public function autoNumberPrefix(array $data = [])

@@ -10,10 +10,8 @@
 
         {{-- ALERT MESSAGES --}}
         @if (session('success'))
-            <div
-                class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm flex items-center">
-                <svg style="width: 20px; height: 20px; min-width: 20px;" class="mr-2" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
+            <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm flex items-center">
+                <svg style="width: 20px; height: 20px; min-width: 20px;" class="mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
                 {{ session('success') }}
@@ -21,43 +19,42 @@
         @endif
         @if (session('error'))
             <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm flex items-center">
-                <svg style="width: 20px; height: 20px; min-width: 20px;" class="mr-2" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg style="width: 20px; height: 20px; min-width: 20px;" class="mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 {{ session('error') }}
             </div>
         @endif
 
-        {{-- STATE 1: BELUM CONNECT --}}
-        @if (!$token)
+        {{-- JIKA PERUSAHAAN BELUM ADA SAMA SEKALI --}}
+        @if (!$perusahaan)
             <div class="bg-white rounded-xl shadow p-10 text-center border border-gray-100">
-                <div class="mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-6"
-                    style="width: 96px; height: 96px;">
-                    <svg style="width: 48px; height: 48px;" class="text-blue-500" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Data Perusahaan Kosong</h2>
+                <p class="text-gray-500">Silakan tambahkan data perusahaan terlebih dahulu di menu Master Perusahaan.</p>
+            </div>
+        
+        {{-- STATE 1: BELUM CONNECT (Belum Punya Token) --}}
+        @elseif (!$perusahaan->accurate_access_token)
+            <div class="bg-white rounded-xl shadow p-10 text-center border border-gray-100">
+                <div class="mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-6" style="width: 96px; height: 96px;">
+                    <svg style="width: 48px; height: 48px;" class="text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800 mb-3">Belum Terhubung ke Accurate</h2>
-                <p class="text-gray-500 mb-8 max-w-md mx-auto">Klik tombol di bawah untuk diarahkan ke halaman login
-                    Accurate dan memberikan izin akses ke sistem.</p>
-                <a href="{{ route('accurate.connect') }}"
+                <p class="text-gray-500 mb-8 max-w-md mx-auto">Klik tombol di bawah untuk diarahkan ke halaman login Accurate dan memberikan izin akses ke sistem.</p>
+                <a href="{{ route('accurate.connect', $perusahaan->id) }}"
                     style="background-color: #2563eb; color: #ffffff; padding: 12px 32px; border-radius: 8px; display: inline-flex; align-items: center; font-weight: 600; text-decoration: none;"
                     class="hover:opacity-90 transition shadow">
-                    <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                     Hubungkan ke Accurate
                 </a>
             </div>
 
          {{-- STATE 2: SUDAH DAPAT TOKEN, BELUM PILIH DATABASE --}}
-        @elseif ($token && !$token->is_connected)
+        @elseif ($perusahaan->accurate_access_token && !$perusahaan->accurate_db_id)
             <div class="bg-white rounded-xl shadow p-8 border border-gray-100 max-w-2xl mx-auto">
                 <div class="flex items-center mb-6 border-b pb-4" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 24px; display: flex; align-items: center;">
                     <div class="bg-yellow-100 rounded-full flex items-center justify-center mr-4" style="background-color: #fef9c3; width: 48px; height: 48px; min-width: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
@@ -108,9 +105,8 @@
                 @endif
             </div>
 
-            {{-- STATE 3: SUDAH CONNECT & PILIH DB --}}
         {{-- STATE 3: SUDAH CONNECT & PILIH DB --}}
-        @elseif ($token && $token->is_connected)
+        @elseif ($perusahaan->accurate_access_token && $perusahaan->accurate_db_id)
             <div style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #f3f4f6;">
                 
                 {{-- Header Card --}}
@@ -140,16 +136,19 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
                             <div>
                                 <p style="margin: 0 0 4px 0; font-size: 0.875rem; color: #6b7280;">Nama Database (Alias)</p>
-                                <p style="margin: 0; font-weight: bold; color: #1f2937;">{{ $token->db_alias }}</p>
+                                <p style="margin: 0; font-weight: bold; color: #1f2937;">{{ $perusahaan->accurate_db_alias }}</p>
                             </div>
                             <div>
                                 <p style="margin: 0 0 4px 0; font-size: 0.875rem; color: #6b7280;">Host Server</p>
-                                <p style="margin: 0; font-weight: bold; color: #1f2937; word-break: break-all;">{{ $token->db_host }}</p>
+                                <p style="margin: 0; font-weight: bold; color: #1f2937; word-break: break-all;">{{ $perusahaan->accurate_host }}</p>
                             </div>
                             <div>
                                 <p style="margin: 0 0 4px 0; font-size: 0.875rem; color: #6b7280;">Batas Waktu Token</p>
-                                <p style="margin: 0; font-weight: bold; color: {{ $token->isExpired() ? '#dc2626' : '#1f2937' }};">
-                                    {{ $token->expires_at?->format('d M Y, H:i') ?? '-' }}
+                                @php
+                                    $isExpired = !$perusahaan->accurate_token_expires_at || now()->gte($perusahaan->accurate_token_expires_at);
+                                @endphp
+                                <p style="margin: 0; font-weight: bold; color: {{ $isExpired ? '#dc2626' : '#1f2937' }};">
+                                    {{ $perusahaan->accurate_token_expires_at?->format('d M Y, H:i') ?? '-' }}
                                 </p>
                             </div>
                         </div>
@@ -165,25 +164,28 @@
                             Tarik seluruh data terbaru dari Accurate (Produk, Customer, Supplier, Kategori, Faktur, dll) sekaligus. Proses ini mungkin membutuhkan waktu beberapa menit.
                         </p>
                         
-                        <button wire:click="syncAll"
-                            style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 1.125rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; min-width: 300px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);">
-                            
-                            {{-- Ikon Default --}}
-                            <svg style="width: 24px; height: 24px; margin-right: 12px;" wire:loading.remove wire:target="syncAll" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                            </svg>
-                            
-                            {{-- Ikon Loading Spinner --}}
-                            <svg style="width: 24px; height: 24px; margin-right: 12px; color: #ffffff;" wire:loading wire:target="syncAll" class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                        {{-- TOMBOL SYNC MASTER DATA (SATU TOMBOL UNTUK SEMUA) --}}
+                        <div>
+                            <button wire:click="syncMasterData"
+                                style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 1.125rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; min-width: 300px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);">
+                                
+                                {{-- Ikon Default --}}
+                                <svg style="width: 24px; height: 24px; margin-right: 12px;" wire:loading.remove wire:target="syncMasterData" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                
+                                {{-- Ikon Loading Spinner --}}
+                                <svg style="width: 24px; height: 24px; margin-right: 12px; color: #ffffff;" wire:loading wire:target="syncMasterData" class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
 
-                            <span wire:loading.remove wire:target="syncAll">Mulai Tarik Semua Data</span>
-                            <span wire:loading wire:target="syncAll">Sedang Menyinkronkan...</span>
-                        </button>
+                                <span wire:loading.remove wire:target="syncMasterData">Mulai Tarik Semua Master Data</span>
+                                <span wire:loading wire:target="syncMasterData">Sedang Menyinkronkan...</span>
+                            </button>
+                        </div>
 
-                        <div wire:loading wire:target="syncAll" style="margin-top: 20px; font-size: 0.875rem; color: #2563eb; font-weight: 500;">
+                        <div wire:loading wire:target="syncMasterData" style="margin-top: 20px; font-size: 0.875rem; color: #2563eb; font-weight: 500;">
                             Mohon jangan tutup halaman ini sampai proses selesai.
                         </div>
                     </div>

@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AccurateService;
+use App\Models\Master\Perusahaan;
+use App\Services\Accurate\AccurateTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AccurateController extends Controller
 {
-    public function __construct(protected AccurateService $accurateService) {}
+    public function __construct(protected AccurateTokenService $tokenService) {}
 
-    public function connect()
+    public function connect(Perusahaan $perusahaan)
     {
-        $url = $this->accurateService->getAuthorizationUrl();
+        $url = $this->tokenService->getAuthorizationUrl($perusahaan->id);
         return redirect($url);
     }
 
@@ -25,10 +26,19 @@ class AccurateController extends Controller
         }
 
         $code = $request->get('code');
-        $success = $this->accurateService->exchangeCodeForToken($code);
+        $perusahaanId = $request->get('state'); 
+        
+        $perusahaan = Perusahaan::find($perusahaanId);
+
+        if (!$perusahaan) {
+            return redirect()->route('admin.system.accurate.index')
+                ->with('error', 'Perusahaan tidak ditemukan saat proses otentikasi.');
+        }
+
+        $success = $this->tokenService->exchangeCodeForToken($code, $perusahaan);
 
         if (!$success) {
-            Log::error('Accurate Token Exchange Failed', ['code' => $code]);
+            Log::error('Accurate Token Exchange Failed', ['code' => $code, 'perusahaan_id' => $perusahaanId]);
             return redirect()->route('admin.system.accurate.index')
                 ->with('error', 'Gagal mendapatkan token dari Accurate.');
         }

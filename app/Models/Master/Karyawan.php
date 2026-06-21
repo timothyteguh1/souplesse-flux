@@ -38,7 +38,10 @@ class Karyawan extends Model
         'kota',
 
         'keterangan',
-        'status'
+        'status',
+        
+        // --- TAMBAHAN UNTUK ACCURATE ---
+        'accurate_id',
     ];
     protected $casts = [
         'tanggal_masuk' => AsDateTimeCast::class,
@@ -50,11 +53,6 @@ class Karyawan extends Model
     }
 
     // region Relationships
-    // public function jabatan(): BelongsTo
-    // {
-    //     return $this->belongsTo(Jabatan::class);
-    // }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

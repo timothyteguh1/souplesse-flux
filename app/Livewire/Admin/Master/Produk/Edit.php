@@ -42,11 +42,11 @@ class Edit extends Component
             ],
             'kategori_produk_id' => ['required'],
             'jenis_produk_id' => ['required'],
-            'model_produk_id' => ['required'],
+            'model_produk_id' => ['nullable'], // FIX: Ubah jadi nullable agar tidak error
             'satuan_id' => ['required'],
             'harga_beli' => ['nullable', 'numeric', 'min:0'],
             'harga_jual' => ['nullable', 'numeric', 'min:0'],
-            'minimal_order' => ['nullable', 'numeric', 'min:1'],
+            'minimal_order' => ['nullable', 'numeric', 'min:0'],
             'stok_minimum' => ['nullable', 'numeric', 'min:0'],
             'deskripsi' => [],
             'keterangan' => [],
@@ -54,7 +54,7 @@ class Edit extends Component
         ];
     }
 
-    public function mount()
+   public function mount()
     {
         $this->checkPermissionEditGate();
 
@@ -63,8 +63,13 @@ class Edit extends Component
         $this->jenis_produk_id = $this->obj->jenis_produk_id;
         $this->kategori_produk_id = $this->obj->kategori_produk_id;
         $this->model_produk_id = $this->obj->model_produk_id;
+        
         $this->satuan_id = $this->obj->satuan_id;
-        $this->satuan_nama = $this->obj->satuan->nama;
+        
+        // --- PERBAIKAN DI SINI ---
+        // Tambahkan tanda tanya (?->) dan fallback (?? '') agar tidak crash saat satuan kosong
+        $this->satuan_nama = $this->obj->satuan?->nama ?? '';
+        
         $this->harga_beli = $this->obj->harga_beli;
         $this->harga_jual = $this->obj->harga_jual;
         $this->minimal_order = $this->obj->minimal_order;

@@ -2,14 +2,14 @@
 
 namespace App\Livewire\Admin\System\Accurate;
 
-use App\Models\AccurateToken;
+use App\Models\Master\Perusahaan;
 use App\Services\AccurateService;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
-    public ?AccurateToken $token = null;
+    public ?Perusahaan $perusahaan = null;
     public array $databases = [];
     public ?string $selectedDbId = null;
     public ?string $selectedDbAlias = null;
@@ -17,17 +17,17 @@ class Index extends Component
 
     public function mount(AccurateService $accurateService)
     {
-        $this->token = AccurateToken::first(); // Memakai first() lebih aman jika tidak ada custom logic getInstance()
+        $this->perusahaan = Perusahaan::first();
         
-        if ($this->token && !$this->token->is_connected) {
-            $this->databases = $accurateService->getDatabaseList();
+        if ($this->perusahaan && $this->perusahaan->accurate_access_token && !$this->perusahaan->accurate_db_id) {
+            $this->databases = $accurateService->getDatabaseList($this->perusahaan);
         }
     }
 
     public function loadDatabases()
     {
         $service = app(AccurateService::class);
-        $this->databases = $service->getDatabaseList();
+        $this->databases = $service->getDatabaseList($this->perusahaan);
     }
 
     public function selectDatabase()
@@ -36,7 +36,6 @@ class Index extends Component
             'selectedDbId' => 'required',
         ]);
 
-        // Cari db dari list
         $db = collect($this->databases)->firstWhere('id', $this->selectedDbId);
         
         if (!$db) {
@@ -46,12 +45,10 @@ class Index extends Component
 
         $service = app(AccurateService::class);
         
-        // Panggil service yang sudah kita update sebelumnya
-        $success = $service->selectDatabase($db['id'], $db['alias']);
+        $success = $service->selectDatabase($this->perusahaan, $db['id'], $db['alias']);
 
         if ($success) {
-            // Update UI token state
-            $this->token = AccurateToken::first();
+            $this->perusahaan->refresh();
             $this->dispatch('toast', type: 'success', message: 'Database Accurate berhasil dipilih dan dihubungkan!');
         } else {
             $this->dispatch('toast', type: 'error', message: 'Gagal menghubungkan database. Silakan cek log sistem.');
@@ -60,45 +57,84 @@ class Index extends Component
 
     public function disconnect()
     {
-        $service = app(AccurateService::class);
-        $service->disconnect();
+        if ($this->perusahaan) {
+            $this->perusahaan->update([
+                'accurate_access_token'     => null,
+                'accurate_refresh_token'    => null,
+                'accurate_token_expires_at' => null,
+                'accurate_db_id'            => null,
+                'accurate_db_alias'         => null,
+                'accurate_host'             => null,
+            ]);
+        }
         
-        $this->token = null;
         $this->databases = [];
-        
         $this->dispatch('toast', type: 'success', message: 'Koneksi Accurate berhasil diputus.');
     }
 
-    /**
-     * Method baru untuk menangani tombol "Sync Semua Data" dari UI
-     */
+    // =========================================================================
+    // FUNGSI SINKRONISASI SEMUA MASTER DATA (TOMBOL GABUNGAN)
+    // =========================================================================
+    public function syncMasterData()
+    {
+        $this->syncAll(); 
+        $this->syncCustomers(); 
+        $this->syncSuppliers(); 
+        $this->syncKaryawans();
+    }
+
+    // =========================================================================
+    // FUNGSI SINKRONISASI PRODUK (BARANG & JASA)
+    // =========================================================================
     public function syncAll()
     {
         try {
             $service = app(AccurateService::class);
             
-            // 1. Tarik data dari Accurate
-            $items = $service->getItems();
+            $items = $service->getItems($this->perusahaan);
 
             if ($items === false) {
                 $this->dispatch('toast', type: 'error', message: 'Gagal menarik data dari API Accurate. Cek log sistem.');
                 return;
             }
 
+            $cabangId = session('cabang_id');
+
+            if (!$cabangId) {
+                $this->dispatch('toast', type: 'error', message: 'Sistem tidak dapat mendeteksi Cabang yang aktif. Pastikan Anda sudah memilih Cabang.');
+                return;
+            }
+
             $count = 0;
             foreach ($items as $item) {
-                // 2. Simpan ke database lokal menggunakan model yang benar
+                $kategoriId = null;
+                if (isset($item['itemCategory']['name'])) {
+                    $kategori = \App\Models\Master\KategoriProduk::firstOrCreate(
+                        ['nama' => $item['itemCategory']['name'], 'cabang_id' => $cabangId]
+                    );
+                    $kategoriId = $kategori->id;
+                }
+
+                $satuanId = null;
+                if (!empty($item['unit1Name'])) {
+                    $satuan = \App\Models\Master\Satuan::firstOrCreate(
+                        ['nama' => $item['unit1Name'], 'cabang_id' => $cabangId]
+                    );
+                    $satuanId = $satuan->id;
+                }
+
                 \App\Models\Master\Produk::updateOrCreate(
-                    // Syarat pencarian: ID dari Accurate
                     ['accurate_id' => $item['id']], 
                     [
-                        // Isi data produk
-                        'kode' => $item['no'] ?? null,
-                        'nama' => $item['name'] ?? null,
-                        
-                        // Kolom relasi seperti kategori_produk_id dan satuan_id 
-                        // dibiarkan kosong (null) dulu sampai kita buat fungsi mapping-nya.
-                        // Pastikan kolom ini diizinkan kosong (nullable) di databasemu.
+                        'kode'        => $item['no'] ?? null,
+                        'nama'        => $item['name'] ?? null,
+                        'cabang_id'   => $cabangId,
+                        'harga_jual'  => $item['unitPrice'] ?? 0,
+                        'harga_beli'  => $item['vendorPrice'] ?? 0, 
+                        'stok'        => $item['quantity'] ?? 0,
+                        'kategori_produk_id' => $kategoriId,
+                        'default_satuan_beli_id' => $satuanId, 
+                        'default_satuan_jual_id' => $satuanId,
                     ]
                 );
                 $count++;
@@ -107,10 +143,202 @@ class Index extends Component
             $this->dispatch('toast', type: 'success', message: "$count Data Produk berhasil disinkronkan dari Accurate!");
             
         } catch (\Exception $e) {
-            Log::error('Accurate Sync Error: ' . $e->getMessage());
-            $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi.');
+            Log::error('Accurate Sync Produk Error: ' . $e->getMessage());
+            $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi Produk.');
         }
     }
+
+    // =========================================================================
+    // FUNGSI SINKRONISASI CUSTOMER (PELANGGAN)
+    // =========================================================================
+    public function syncCustomers()
+    {
+        try {
+            $service = app(AccurateService::class);
+            
+            $response = $service->apiGet($this->perusahaan, '/customer/list.do', [
+                'fields' => 'id,name,customerNo,workPhone,mobilePhone,email,billStreet,billCity,notes'
+            ]);
+
+            if (!$response || !isset($response['d'])) {
+                $this->dispatch('toast', type: 'error', message: 'Gagal menarik data Customer dari API Accurate.');
+                return;
+            }
+
+            $customers = $response['d'];
+            $cabangId = session('cabang_id');
+
+            if (!$cabangId) return;
+
+            $count = 0;
+            foreach ($customers as $item) {
+                try {
+                    $kodeCustomer = !empty($item['customerNo']) ? $item['customerNo'] : 'C-ACC-' . $item['id'];
+                    $namaCustomer = !empty($item['name']) ? $item['name'] : 'Tanpa Nama';
+
+                    \App\Models\Master\Customer::updateOrCreate(
+                        [
+                            'accurate_id' => $item['id']
+                        ], 
+                        [
+                            'kode'       => $kodeCustomer,
+                            'nama'       => $namaCustomer,
+                            'cabang_id'  => $cabangId,
+                            'telp'       => $item['workPhone'] ?? null,
+                            'handphone'  => $item['mobilePhone'] ?? null,
+                            'email'      => $item['email'] ?? null,
+                            'alamat'     => $item['billStreet'] ?? null,
+                            'kota'       => $item['billCity'] ?? null,
+                            'keterangan' => $item['notes'] ?? null,
+                        ]
+                    );
+                    $count++;
+                } catch (\Exception $e) {
+                    Log::error("Gagal simpan customer {$item['name']} dari Accurate: " . $e->getMessage());
+                    continue; 
+                }
+            }
+
+            $this->dispatch('toast', type: 'success', message: "$count Data Customer berhasil disinkronkan dari Accurate!");
+            
+        } catch (\Exception $e) {
+            Log::error('Accurate Sync Customer Error: ' . $e->getMessage());
+            $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi Customer.');
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI SINKRONISASI SUPPLIER (PEMASOK)
+    // =========================================================================
+    public function syncSuppliers()
+    {
+        try {
+            $service = app(AccurateService::class);
+            
+            $response = $service->apiGet($this->perusahaan, '/vendor/list.do', [
+                'fields' => 'id,name,vendorNo'
+            ]);
+
+            if (!$response || !isset($response['d'])) {
+                $this->dispatch('toast', type: 'error', message: 'Gagal menarik data Supplier dari API Accurate.');
+                return;
+            }
+
+            $suppliers = $response['d'];
+            $cabangId = session('cabang_id');
+
+            if (!$cabangId) return;
+
+            $count = 0;
+            foreach ($suppliers as $item) {
+                try {
+                    $detailResponse = $service->apiGet($this->perusahaan, '/vendor/detail.do', [
+                        'id' => $item['id']
+                    ]);
+
+                    $detail = $detailResponse['d'] ?? $item;
+
+                    $kodeSupplier = !empty($detail['vendorNo']) ? $detail['vendorNo'] : 'V-ACC-' . $detail['id'];
+                    $namaSupplier = !empty($detail['name']) ? $detail['name'] : 'Tanpa Nama';
+
+                    \App\Models\Master\Supplier::updateOrCreate(
+                        [
+                            'accurate_id' => $detail['id']
+                        ], 
+                        [
+                            'kode'       => $kodeSupplier,
+                            'nama'       => $namaSupplier,
+                            'cabang_id'  => $cabangId,
+                            'telp'       => $detail['workPhone'] ?? null,
+                            'handphone'  => $detail['mobilePhone'] ?? null,
+                            'email'      => $detail['email'] ?? null,
+                            'alamat'     => $detail['billStreet'] ?? null,
+                            'kota'       => $detail['billCity'] ?? null,
+                            'keterangan' => $detail['notes'] ?? null,
+                        ]
+                    );
+                    $count++;
+                    
+                } catch (\Exception $e) {
+                    Log::error("Gagal simpan supplier {$item['name']} dari Accurate: " . $e->getMessage());
+                    continue; 
+                }
+            }
+
+            $this->dispatch('toast', type: 'success', message: "$count Data Supplier berhasil disinkronkan dari Accurate!");
+            
+        } catch (\Exception $e) {
+            Log::error('Accurate Sync Supplier Error: ' . $e->getMessage());
+            $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi Supplier.');
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI SINKRONISASI KARYAWAN (SALESMAN)
+    // =========================================================================
+    public function syncKaryawans()
+    {
+        try {
+            $service = app(AccurateService::class);
+            
+            // Tarik list karyawan (Employee) dari Accurate
+            $response = $service->apiGet($this->perusahaan, '/employee/list.do', [
+                'fields' => 'id,name,no'
+            ]);
+
+            if (!$response || !isset($response['d'])) return;
+
+            $karyawans = $response['d'];
+            $cabangId = session('cabang_id');
+
+            if (!$cabangId) return;
+
+            $count = 0;
+            foreach ($karyawans as $item) {
+                try {
+                    // Ketuk pintu ke endpoint detail agar data kontak dan alamat terbawa
+                    $detailResponse = $service->apiGet($this->perusahaan, '/employee/detail.do', [
+                        'id' => $item['id']
+                    ]);
+                    
+                    $detail = $detailResponse['d'] ?? $item;
+
+                    $kodeKaryawan = !empty($detail['no']) ? $detail['no'] : 'K-ACC-' . $detail['id'];
+                    $namaKaryawan = !empty($detail['name']) ? $detail['name'] : 'Tanpa Nama';
+
+                    \App\Models\Master\Karyawan::updateOrCreate(
+                        ['accurate_id' => $detail['id']], 
+                        [
+                            'kode'       => $kodeKaryawan,
+                            'nama'       => $namaKaryawan,
+                            'cabang_id'  => $cabangId,
+                            'telp'       => $detail['workPhone'] ?? null,
+                            'handphone'  => $detail['mobilePhone'] ?? null,
+                            'email'      => $detail['email'] ?? null,
+                            
+                            // Jurus sapu jagat alamat
+                            'alamat'     => $detail['billStreet'] ?? $detail['street'] ?? $detail['address'] ?? null,
+                            'kota'       => $detail['billCity'] ?? $detail['city'] ?? null,
+                            
+                            'keterangan' => $detail['notes'] ?? null,
+                        ]
+                    );
+                    $count++;
+                    
+                } catch (\Exception $e) {
+                    Log::error("Gagal simpan Karyawan {$item['name']} dari Accurate: " . $e->getMessage());
+                    continue; 
+                }
+            }
+
+            $this->dispatch('toast', type: 'success', message: "$count Data Karyawan berhasil disinkronkan dari Accurate!");
+            
+        } catch (\Exception $e) {
+            Log::error('Accurate Sync Karyawan Error: ' . $e->getMessage());
+            $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi Karyawan.');
+        }
+    }
+
     public function render()
     {
         return view('livewire.admin.system.accurate.index')

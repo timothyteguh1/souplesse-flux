@@ -55,6 +55,9 @@ class Customer extends Model
 
         'keterangan',
         'status',
+        'accurate_id',
+        'accurate_no',
+        'accurate_synced_at',
     ];
 
     public function autoNumberPrefix(array $data = [])

@@ -43,6 +43,9 @@ class Supplier extends Model
         'payment_info',
         'keterangan',
         'status',
+        
+        // --- TAMBAHAN UNTUK ACCURATE ---
+        'accurate_id', 
     ];
 
     public function autoNumberPrefix(array $data = [])

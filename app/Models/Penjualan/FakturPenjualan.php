@@ -52,6 +52,10 @@ class FakturPenjualan extends Model
         'bukti_potong',
         'keterangan',
         'status',
+        'accurate_id',
+        'accurate_no',
+        'accurate_synced_at',
+        'accurate_sync_error',
     ];
     protected $casts = [
         'tanggal' => AsDateTimeCast::class,
