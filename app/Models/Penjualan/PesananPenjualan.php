@@ -27,6 +27,7 @@ class PesananPenjualan extends Model
     protected $auto_number_length = 4;
     protected $route_prefix = 'admin.penjualan.pesanan-penjualan';
     protected $permission_prefix = 'admin.penjualan.pesanan-penjualan';
+    
     protected $fillable = [
         'id',
         'cabang_id',
@@ -43,7 +44,11 @@ class PesananPenjualan extends Model
         'biaya_lain',
         'keterangan',
         'status',
+        
+        // --- TAMBAHAN UNTUK ACCURATE ---
+        'accurate_id',
     ];
+    
     protected $attributes = [
         'status' => Const_Status::PESANAN_PENJUALAN_MENUNGGU_PERSETUJUAN,
     ];

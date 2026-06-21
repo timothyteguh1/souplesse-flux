@@ -81,6 +81,7 @@ class Index extends Component
         $this->syncCustomers(); 
         $this->syncSuppliers(); 
         $this->syncKaryawans();
+        $this->syncPesananPenjualans();
     }
 
     // =========================================================================
@@ -145,6 +146,114 @@ class Index extends Component
         } catch (\Exception $e) {
             Log::error('Accurate Sync Produk Error: ' . $e->getMessage());
             $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan sistem saat sinkronisasi Produk.');
+        }
+    }
+    // =========================================================================
+    // FUNGSI SINKRONISASI PESANAN PENJUALAN (SO) - PULL DARI ACCURATE
+    // =========================================================================
+    public function syncPesananPenjualans()
+    {
+        try {
+            $service = app(AccurateService::class);
+            
+            // 1. Tarik List SO dari Accurate
+            $response = $service->apiGet($this->perusahaan, '/sales-order/list.do', [
+                'fields' => 'id,number,transDate,description'
+            ]);
+
+            if (!$response || !isset($response['d'])) return;
+
+            $salesOrders = $response['d'];
+            $cabangId = session('cabang_id');
+
+            if (!$cabangId) return;
+
+            $count = 0;
+            foreach ($salesOrders as $item) {
+                try {
+                    // Cek apakah SO ini sudah ada di database lokal kita
+                    $soLokal = \App\Models\Penjualan\PesananPenjualan::where('accurate_id', $item['id'])->first();
+                    if ($soLokal) {
+                        continue; // Jika sudah ada, lewati (agar tidak dobel)
+                    }
+
+                    // 2. Ketuk Pintu Detail untuk mengambil Customer, Sales, dan Barang
+                    $detailResponse = $service->apiGet($this->perusahaan, '/sales-order/detail.do', [
+                        'id' => $item['id']
+                    ]);
+                    $detail = $detailResponse['d'] ?? $item;
+
+                    // Cari ID Customer Lokal berdasarkan Kode dari Accurate
+                    $customerNo = $detail['customer']['no'] ?? null;
+                    $customer = \App\Models\Master\Customer::where('kode', $customerNo)->first();
+                    if (!$customer) continue; // Wajib ada customer di lokal, jika tidak lewati
+
+                    // Cari ID Sales Lokal berdasarkan Kode dari Accurate
+                    $employeeNo = $detail['employee']['no'] ?? null;
+                    $karyawan = \App\Models\Master\Karyawan::where('kode', $employeeNo)->first();
+                    
+                    // Susun Data Barang (Detail Item)
+                    $items = [];
+                    if (isset($detail['detailItem'])) {
+                        foreach ($detail['detailItem'] as $det) {
+                            // Cari barang lokal berdasarkan SKU Accurate
+                            $itemNo = $det['item']['no'] ?? null;
+                            $produk = \App\Models\Master\Produk::where('kode', $itemNo)->first();
+                            
+                            if ($produk) {
+                                $items[] = [
+                                    'produk_id' => $produk->id,
+                                    'qty'       => $det['quantity'] ?? 1,
+                                    'harga'     => $det['unitPrice'] ?? 0,
+                                ];
+                            }
+                        }
+                    }
+
+                    // Jika tidak ada barang yang nyangkut/cocok di lokal, lewati SO ini
+                    if (empty($items)) continue;
+
+                    // 3. Simpan Header SO ke database Lokal secara langsung (Bypass Service)
+                    $tanggalSO = isset($detail['transDate']) ? \Carbon\Carbon::createFromFormat('d/m/Y', $detail['transDate'])->format('Y-m-d H:i:s') : now();
+
+                    $soBaru = \App\Models\Penjualan\PesananPenjualan::create([
+                        'accurate_id'     => $detail['id'],
+                        'cabang_id'       => $cabangId,
+                        'kode'            => $detail['number'] ?? 'SO-ACC-' . $detail['id'],
+                        'tanggal'         => $tanggalSO,
+                        'customer_id'     => $customer->id,
+                        'karyawan_id'     => $karyawan ? $karyawan->id : null,
+                        'keterangan'      => $detail['description'] ?? null,
+                        
+                        // Default Setting
+                        'jenis_transaksi' => \App\Utilities\Constants\Const_Umum::JENIS_TRANSAKSI_PESANAN_PENJUALAN ?? 'Pesanan Penjualan',
+                        'is_pkp'          => isset($detail['tax1Name']) ? 1 : 0,
+                        'is_include_ppn'  => ($detail['inclusiveTax'] ?? false) ? 1 : 0,
+                        'ppn_percent'     => isset($detail['tax1Name']) ? 11 : 0, 
+                        'diskon_type'     => \App\Utilities\Constants\Const_Umum::DISKON_TYPE_RP ?? 'rp',
+                        'diskon'          => $detail['cashDiscount'] ?? 0,
+                        'biaya_lain'      => 0,
+                        'status'          => \App\Utilities\Constants\Const_Status::PESANAN_PENJUALAN_BELUM_SELESAI ?? 'Belum Selesai',
+                    ]);
+
+                    // 4. Simpan Detail Barang ke database Lokal
+                    foreach($items as $it) {
+                        $it['pesanan_penjualan_id'] = $soBaru->id;
+                        \App\Models\Penjualan\PesananPenjualanDetail::create($it);
+                    }
+                    
+                    $count++;
+                    
+                } catch (\Exception $e) {
+                    Log::error("Gagal pull SO {$item['number']} dari Accurate: " . $e->getMessage());
+                    continue; 
+                }
+            }
+
+            $this->dispatch('toast', type: 'success', message: "$count Pesanan Penjualan baru berhasil ditarik dari Accurate!");
+            
+        } catch (\Exception $e) {
+            Log::error('Accurate Sync SO Pull Error: ' . $e->getMessage());
         }
     }
 

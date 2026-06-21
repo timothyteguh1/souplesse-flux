@@ -27,14 +27,27 @@ class AccurateTokenService
      */
     public function getAuthorizationUrl(string $perusahaanId): string
     {
+        // --- JURUS SAPU JAGAT SCOPES TRANSAKSI ---
+        // Kita borong semua izin untuk Penjualan, Pembelian, dan Persediaan
+        $scopes = [
+            'item_view', 'item_save', 
+            'customer_view', 'customer_save', 
+            'vendor_view', 'vendor_save', 
+            'employee_view', 'employee_save',
+            'sales_order_view', 'sales_order_save',
+            'delivery_order_view', 'delivery_order_save',
+            'sales_invoice_view', 'sales_invoice_save',
+            'purchase_order_view', 'purchase_order_save',
+            'purchase_return_view', 'purchase_return_save',
+            'item_adjustment_view', 'item_adjustment_save'
+        ];
+
         $params = http_build_query([
             'client_id' => $this->clientId,
             'response_type' => 'code',
             'redirect_uri' => $this->redirectUri,
             'state' => $perusahaanId, 
-            
-            // --- PERBAIKAN: Menambahkan employee_view dan employee_save ---
-            'scope' => 'item_view item_save customer_view customer_save vendor_view vendor_save employee_view employee_save sales_invoice_view sales_invoice_save purchase_order_view purchase_order_save',
+            'scope' => implode(' ', $scopes),
         ]);
 
         return "{$this->baseUrl}/oauth/authorize?{$params}";
@@ -110,13 +123,12 @@ class AccurateTokenService
             return null;
         }
 
-        // Cek apakah token sudah expired
         if (!$perusahaan->accurate_token_expires_at || now()->gte($perusahaan->accurate_token_expires_at)) {
             $refreshed = $this->refreshToken($perusahaan);
             if (!$refreshed) {
                 return null;
             }
-            $perusahaan->refresh(); // Ambil data terbaru dari DB setelah update
+            $perusahaan->refresh();
         }
 
         return $perusahaan->accurate_access_token;

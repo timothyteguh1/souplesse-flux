@@ -6,6 +6,9 @@ use App\Exceptions\GeneralException;
 use App\Utilities\Constants\Const_Status;
 use App\Models\Penjualan\PesananPenjualan;
 use App\Models\Penjualan\PesananPenjualanDetail;
+use App\Models\Master\Perusahaan;
+use App\Services\AccurateService;
+use Illuminate\Support\Facades\Log;
 
 class PesananPenjualanService
 {
@@ -16,10 +19,16 @@ class PesananPenjualanService
         }
 
         $obj = PesananPenjualan::create($data);
+        
         // detail
         foreach ($data['items'] as $item) {
             PesananPenjualanDetailService::create($obj, $item);
         }
+        
+        $obj->refresh();
+
+        // --- TRIGGER PUSH KE ACCURATE ---
+        self::pushToAccurate($obj);
 
         return $obj;
     }
@@ -33,7 +42,11 @@ class PesananPenjualanService
         $obj->update($data);
 
         self::updateDetail($obj, $data['items']);
+        
         $obj->refresh();
+
+        // --- TRIGGER PUSH KE ACCURATE ---
+        self::pushToAccurate($obj);
 
         return true;
     }
@@ -66,6 +79,90 @@ class PesananPenjualanService
         return true;
     }
 
+    // ========================================================
+    // LOGIKA PUSH DATA PESANAN PENJUALAN (SO) KE ACCURATE
+    // ========================================================
+  // ========================================================
+    // LOGIKA PUSH DATA PESANAN PENJUALAN (SO) KE ACCURATE
+    // ========================================================
+    protected static function pushToAccurate(PesananPenjualan $so): void
+    {
+        try {
+            Log::info("=== MULAI PUSH SO '{$so->kode}' KE ACCURATE ===");
+
+            $perusahaan = Perusahaan::whereNotNull('accurate_host')->first(); 
+            if (!$perusahaan) return; 
+
+            // Pastikan relasi pelanggan, karyawan, dan detail produk diload
+            $so->loadMissing(['details.produk', 'customer', 'karyawan']);
+
+            $accurateService = app(AccurateService::class);
+
+            // Mapping header
+            $payload = [
+                'number'       => $so->kode,
+                // Format tanggal anti-error
+                'transDate'    => $so->tanggal ? \Carbon\Carbon::parse(str_replace('/', '-', $so->tanggal))->format('d/m/Y') : date('d/m/Y'),
+                'description'  => $so->keterangan ?? '',
+                'cashDiscount' => $so->diskon_rupiah,
+                'inclusiveTax' => $so->is_include_ppn ? 'true' : 'false',
+                'tax1Name'     => $so->is_pkp ? 'PPN' : '',
+            ];
+
+            // Mapping Customer & Karyawan
+            if ($so->customer) {
+                $payload['customerNo'] = $so->customer->kode;
+            }
+            if ($so->karyawan) {
+                $payload['employeeNo'] = $so->karyawan->kode;
+            }
+
+            if ($so->accurate_id) {
+                $payload['id'] = $so->accurate_id;
+            }
+
+            // --- PERBAIKAN: MAPPING BARANG JURUS "JAVA BINDING" ---
+            // Mengubah format array PHP menjadi format list ber-indeks milik Java (Spring)
+            $index = 0;
+            foreach ($so->details as $detail) {
+                if ($detail->produk) {
+                    $payload["detailItem[$index].itemNo"]    = $detail->produk->kode; // SKU Produk
+                    $payload["detailItem[$index].unitPrice"] = $detail->harga;        // Harga
+                    $payload["detailItem[$index].quantity"]  = $detail->qty;          // Qty
+                    
+                    // (Opsional) Jika item ada diskonnya, aktifkan baris ini:
+                    // $payload["detailItem[$index].itemDiscountPercent"] = $detail->diskon ?? 0;
+                    
+                    $index++;
+                }
+            }
+
+            // Tembak API save SO
+            $response = $accurateService->apiPost($perusahaan, '/sales-order/save.do', $payload);
+
+            if ($response === null) {
+                Log::error("BATAL PUSH SO: Fungsi apiPost mengembalikan nilai NULL.");
+                return;
+            }
+
+            Log::info("Jawaban Server Accurate untuk SO:", $response);
+
+            // Tangkap ID yang diberikan Accurate jika sukses
+            if (isset($response['s']) && $response['s'] === true && !$so->accurate_id) {
+                $accurateId = $response['r']['id'] ?? ($response['d']['id'] ?? null);
+                if ($accurateId) {
+                    $so->updateQuietly(['accurate_id' => $accurateId]); 
+                    Log::info("SUKSES! SO masuk dengan Accurate ID: " . $accurateId);
+                }
+            } else if (!isset($response['s']) || $response['s'] !== true) {
+                 Log::error('DITOLAK ACCURATE! Alasan:', $response);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('GAGAL FATAL saat Push SO ke Accurate: ' . $e->getMessage());
+        }
+    }
+    // --- (Fungsi Update Status lainnya tetap sama) ---
     public static function updateStatusMenungguPersetujuan(PesananPenjualan $obj)
     {
         if ($obj->fakturPenjualanDetails()->count() > 0) {
