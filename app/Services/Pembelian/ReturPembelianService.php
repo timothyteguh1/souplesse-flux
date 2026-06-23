@@ -12,6 +12,11 @@ use App\Models\Pembelian\ReturPembelianDetail;
 use App\Services\System\MutasiTransaksiService;
 use App\Utilities\Functions\TransactionFunction;
 
+// --- TAMBAHAN NAMESPACE UNTUK INTEGRASI ACCURATE ---
+use App\Models\Master\Perusahaan;
+use App\Services\AccurateService;
+use Illuminate\Support\Facades\Log;
+
 class ReturPembelianService
 {
     public static function create(array $data = []): ReturPembelian
@@ -41,6 +46,9 @@ class ReturPembelianService
             $obj->grandtotal,
             'Retur Pembelian: [' . $obj->kode . ']',
         );
+
+        // --- TRIGGER PUSH RETUR KE ACCURATE ---
+        self::pushToAccurate($obj);
 
         return $obj;
     }
@@ -74,6 +82,9 @@ class ReturPembelianService
             $obj->grandtotal,
             'Retur Pembelian: [' . $obj->kode . ']',
         );
+
+        // --- TRIGGER PUSH RETUR KE ACCURATE ---
+        self::pushToAccurate($obj);
 
         return true;
     }
@@ -140,5 +151,72 @@ class ReturPembelianService
         }
 
         return $obj->delete();
+    }
+
+    // ========================================================
+    // LOGIKA PUSH RETUR PEMBELIAN KE ACCURATE (TIPE: NO_INVOICE)
+    // ========================================================
+    protected static function pushToAccurate(ReturPembelian $retur): void
+    {
+        try {
+            Log::info("=== MULAI PUSH RETUR PEMBELIAN '{$retur->kode}' KE ACCURATE (TIPE: NO_INVOICE) ===");
+
+            $perusahaan = Perusahaan::whereNotNull('accurate_host')->first();
+            if (!$perusahaan) return;
+
+            $retur->loadMissing(['details.pesananPembelianDetail.pesananPembelian', 'details.pesananPembelianDetail.produk', 'supplier']);
+            $accurateService = app(AccurateService::class);
+
+            $tanggalFormat = $retur->tanggal ? \Carbon\Carbon::parse(str_replace('/', '-', $retur->tanggal))->format('d/m/Y') : date('d/m/Y');
+
+            $payload = [
+                'number'       => $retur->kode,
+                'transDate'    => $tanggalFormat,
+                'description'  => $retur->keterangan ?? 'Retur otomatis dari sistem lokal (Tanpa Referensi Dokumen)',
+                'taxDate'      => $tanggalFormat,
+                
+                // --- PERBAIKAN FINAL SESUAI DOKUMENTASI API ---
+                'returnType'   => 'NO_INVOICE', 
+            ];
+
+            // Masukkan data Vendor
+            if ($retur->supplier) {
+                $payload['vendorNo'] = $retur->supplier->kode;
+            }
+
+            $index = 0;
+            foreach ($retur->details as $detail) {
+                if ($detail->pesananPembelianDetail && $detail->pesananPembelianDetail->produk) {
+                    $payload["detailItem[$index].itemNo"]    = $detail->pesananPembelianDetail->produk->kode;
+                    $payload["detailItem[$index].unitPrice"] = $detail->dpp_satuan ?? 0;
+                    $payload["detailItem[$index].quantity"]  = $detail->jumlah;
+                    
+                    // Kita tidak mengirimkan receiveItemNumber karena tipenya NO_INVOICE
+                    
+                    $index++;
+                }
+            }
+
+            Log::info("=== DEBUG PAYLOAD FINAL RETUR PEMBELIAN '{$retur->kode}' ===");
+            Log::info(json_encode($payload, JSON_PRETTY_PRINT));
+
+            $response = $accurateService->apiPost($perusahaan, '/purchase-return/save.do', $payload);
+
+            if ($response === null) {
+                Log::error("BATAL PUSH RETUR PEMBELIAN: Fungsi apiPost mengembalikan nilai NULL.");
+                return;
+            }
+
+            Log::info("Jawaban Server Accurate untuk Retur Pembelian:", $response);
+
+            if (isset($response['s']) && $response['s'] === true) {
+                Log::info("SUKSES! Retur Pembelian berhasil dibuat di Accurate. Stok otomatis dikurangi.");
+            } else {
+                Log::error('DITOLAK ACCURATE (Retur Pembelian)! Alasan:', $response);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('GAGAL FATAL saat Push Retur Pembelian ke Accurate: ' . $e->getMessage());
+        }
     }
 }

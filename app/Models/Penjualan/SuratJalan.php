@@ -29,6 +29,7 @@ class SuratJalan extends Model
     protected $auto_number_length = 4;
     protected $route_prefix = 'admin.penjualan.surat-jalan';
     protected $permission_prefix = 'admin.penjualan.surat-jalan';
+    
     protected $fillable = [
         'id',
         'cabang_id',
@@ -43,7 +44,11 @@ class SuratJalan extends Model
         'biaya',
         'keterangan',
         'status',
+        
+        // --- TAMBAHAN UNTUK ACCURATE ---
+        'accurate_id',
     ];
+    
     protected $attributes = [
         'status' => Const_Status::SURAT_JALAN_BELUM_SELESAI,
     ];

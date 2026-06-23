@@ -16,6 +16,11 @@ use App\Utilities\Functions\TransactionFunction;
 use App\Models\Penjualan\FakturPenjualanPembayaran;
 use App\Models\Penjualan\PesananPenjualan;
 
+// --- TAMBAHAN NAMESPACE UNTUK ACCURATE ---
+use App\Models\Master\Perusahaan;
+use App\Services\AccurateService;
+use Illuminate\Support\Facades\Log;
+
 class FakturPenjualanService
 {
     public static function create(array $data = []): FakturPenjualan
@@ -31,16 +36,20 @@ class FakturPenjualanService
         $obj = FakturPenjualan::create($data);
 
         // detail
-        foreach ($data['items'] as $item) {
-            FakturPenjualanDetailService::create($obj, $item);
+        if (isset($data['items'])) {
+            foreach ($data['items'] as $item) {
+                FakturPenjualanDetailService::create($obj, $item);
+            }
         }
 
         // beban
-        foreach ($data['items_beban'] as $item) {
-            FakturPenjualanBebanService::create($obj, $item);
+        if (isset($data['items_beban'])) {
+            foreach ($data['items_beban'] as $item) {
+                FakturPenjualanBebanService::create($obj, $item);
+            }
         }
 
-        if ($data['jenis_transaksi'] == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_LUNAS) {
+        if ($data['jenis_transaksi'] == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_LUNAS && isset($data['items_pembayaran'])) {
             // pembayaran
             foreach ($data['items_pembayaran'] as $item) {
                 FakturPenjualanPembayaranService::create($obj, $item);
@@ -72,6 +81,11 @@ class FakturPenjualanService
             PesananPenjualanService::updateStatusSelesai($pesananPenjualan);
         }
 
+        $obj->refresh();
+
+        // --- TRIGGER PUSH FAKTUR KE ACCURATE ---
+        self::pushToAccurate($obj);
+
         return $obj;
     }
 
@@ -88,10 +102,16 @@ class FakturPenjualanService
         }
 
         $obj->update($data);
-        self::updateDetail($obj, $data['items']);
-        self::updateBeban($obj, $data['items_beban']);
+        
+        if (isset($data['items'])) {
+            self::updateDetail($obj, $data['items']);
+        }
+        
+        if (isset($data['items_beban'])) {
+            self::updateBeban($obj, $data['items_beban']);
+        }
 
-        if ($data['jenis_transaksi'] == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_LUNAS) {
+        if ($data['jenis_transaksi'] == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_LUNAS && isset($data['items_pembayaran'])) {
             self::updatePembayaran($obj, $data['items_pembayaran']);
         } else {
             foreach ($obj->pembayarans as $value) {
@@ -116,6 +136,11 @@ class FakturPenjualanService
                 'Faktur Penjualan: [' . $obj->kode . ']',
             );
         }
+
+        $obj->refresh();
+
+        // --- TRIGGER PUSH FAKTUR KE ACCURATE ---
+        self::pushToAccurate($obj);
 
         return true;
     }
@@ -263,5 +288,90 @@ class FakturPenjualanService
     {
         $obj->status_pengiriman = Const_Status::PENGIRIMAN_DETAIL_DALAM_PERJALANAN;
         $obj->save();
+    }
+
+    // ========================================================
+    // LOGIKA PUSH FAKTUR PENJUALAN (SALES INVOICE) KE ACCURATE
+    // ========================================================
+    protected static function pushToAccurate(FakturPenjualan $fp): void
+    {
+        try {
+            Log::info("=== MULAI PUSH FAKTUR PENJUALAN '{$fp->kode}' KE ACCURATE ===");
+
+            $perusahaan = Perusahaan::whereNotNull('accurate_host')->first(); 
+            if (!$perusahaan) return; 
+
+            // Pastikan relasi penting di-load
+            $fp->loadMissing(['details.produk', 'customer', 'suratJalan', 'pesananPenjualan']);
+
+            $accurateService = app(AccurateService::class);
+
+            // Mapping header
+            $payload = [
+                'number'       => $fp->kode,
+                'transDate'    => $fp->tanggal ? \Carbon\Carbon::parse(str_replace('/', '-', $fp->tanggal))->format('d/m/Y') : date('d/m/Y'),
+                'description'  => $fp->keterangan ?? '',
+                'cashDiscount' => $fp->diskon_rupiah,
+                'inclusiveTax' => $fp->is_include_ppn ? 'true' : 'false',
+                'tax1Name'     => $fp->is_pkp ? 'PPN' : '',
+            ];
+
+            // Mapping Customer
+            if ($fp->customer) {
+                $payload['customerNo'] = $fp->customer->kode;
+            }
+
+            // MAPPING JALUR FAKTUR (3 in 1)
+            if ($fp->jenis_transaksi == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_SJ) {
+                // Jalur 1: Tarik dari Surat Jalan
+                if ($fp->suratJalan && $fp->suratJalan->accurate_id) {
+                    $payload['deliveryOrderId'] = $fp->suratJalan->accurate_id;
+                }
+            } elseif ($fp->jenis_transaksi == Const_Umum::JENIS_TRANSAKSI_FAKTUR_PENJUALAN_SO) {
+                // Jalur 2: Tarik dari Pesanan Penjualan
+                if ($fp->pesananPenjualan && $fp->pesananPenjualan->accurate_id) {
+                    $payload['salesOrderId'] = $fp->pesananPenjualan->accurate_id;
+                }
+            }
+
+            // Jika update
+            if ($fp->accurate_id) {
+                $payload['id'] = $fp->accurate_id;
+            }
+
+            // Mapping Detail Barang (Java Binding)
+            $index = 0;
+            foreach ($fp->details as $detail) {
+                if ($detail->produk) {
+                    $payload["detailItem[$index].itemNo"]    = $detail->produk->kode;
+                    $payload["detailItem[$index].unitPrice"] = $detail->harga;
+                    $payload["detailItem[$index].quantity"]  = $detail->qty;
+                    $index++;
+                }
+            }
+
+            // Tembak API save Sales Invoice
+            $response = $accurateService->apiPost($perusahaan, '/sales-invoice/save.do', $payload);
+
+            if ($response === null) {
+                Log::error("BATAL PUSH FAKTUR: Fungsi apiPost mengembalikan nilai NULL.");
+                return;
+            }
+
+            Log::info("Jawaban Server Accurate untuk Faktur Penjualan:", $response);
+
+            if (isset($response['s']) && $response['s'] === true && !$fp->accurate_id) {
+                $accurateId = $response['r']['id'] ?? ($response['d']['id'] ?? null);
+                if ($accurateId) {
+                    $fp->updateQuietly(['accurate_id' => $accurateId]); 
+                    Log::info("SUKSES! Faktur Penjualan masuk dengan Accurate ID: " . $accurateId);
+                }
+            } else if (!isset($response['s']) || $response['s'] !== true) {
+                 Log::error('DITOLAK ACCURATE! Alasan:', $response);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('GAGAL FATAL saat Push Faktur Penjualan ke Accurate: ' . $e->getMessage());
+        }
     }
 }

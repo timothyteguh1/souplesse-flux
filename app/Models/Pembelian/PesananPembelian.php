@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 
 class PesananPembelian extends Model
 {
@@ -25,6 +26,7 @@ class PesananPembelian extends Model
     protected $auto_number_length = 4;
     protected $route_prefix = 'admin.pembelian.pesanan-pembelian';
     protected $permission_prefix = 'admin.pembelian.pesanan-pembelian';
+    
     protected $fillable = [
         'cabang_id',
         'kode',
@@ -40,7 +42,14 @@ class PesananPembelian extends Model
         'nsfp',
         'keterangan',
         'status',
+
+        // --- KOLOM INTEGRASI ACCURATE ---
+        'accurate_id',
+        'accurate_no',
+        'accurate_synced_at',
+        'accurate_sync_error',
     ];
+    
     protected $casts = [
         'tanggal' => AsDateTimeCast::class,
     ];

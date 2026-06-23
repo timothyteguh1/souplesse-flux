@@ -37,8 +37,14 @@ class AccurateTokenService
             'sales_order_view', 'sales_order_save',
             'delivery_order_view', 'delivery_order_save',
             'sales_invoice_view', 'sales_invoice_save',
-            'purchase_order_view', 'purchase_order_save',
-            'purchase_return_view', 'purchase_return_save',
+            
+            // --- SIKLUS PEMBELIAN LENGKAP ---
+            'purchase_order_view', 'purchase_order_save',     // Pesanan Pembelian
+            'receive_item_view', 'receive_item_save',         // Penerimaan Barang (SOLUSI ERROR 403)
+            'purchase_invoice_view', 'purchase_invoice_save', // Faktur Pembelian (Persiapan Next Step)
+            'purchase_payment_view', 'purchase_payment_save', // Pembayaran Pembelian (Persiapan Next Step)
+            'purchase_return_view', 'purchase_return_save',   // Retur Pembelian
+            
             'item_adjustment_view', 'item_adjustment_save'
         ];
 
